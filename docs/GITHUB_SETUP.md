@@ -13,10 +13,10 @@ git commit -m "Initial commit"
 git push -u origin main
 
 # 3. Create labels
-gh label create "feature" --color "a2eeef" -R drswobodziczka/awesome-arcade-shooter
-gh label create "bug" --color "d73a4a" -R drswobodziczka/awesome-arcade-shooter
-gh label create "next" --color "fbca04" -R drswobodziczka/awesome-arcade-shooter
-gh label create "backlog" --color "d4c5f9" -R drswobodziczka/awesome-arcade-shooter
+gh label create "feature" -R drswobodziczka/awesome-arcade-shooter
+gh label create "bug" -R drswobodziczka/awesome-arcade-shooter
+gh label create "next" -R drswobodziczka/awesome-arcade-shooter
+gh label create "backlog" -R drswobodziczka/awesome-arcade-shooter
 
 # 4. Create project
 gh project create --title "Awesome Arcade Shooter" --owner drswobodziczka
