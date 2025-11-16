@@ -6,7 +6,9 @@
   "scripts": {
     "arcade-shooter:dev": "cd PoCs/arcade-shooter && npm run dev",
     "arcade-shooter:build": "cd PoCs/arcade-shooter && npm run build",
-    "arcade-shooter:preview": "cd PoCs/arcade-shooter && npm run preview"
+    "arcade-shooter:preview": "cd PoCs/arcade-shooter && npm run preview",
+    "arcade-shooter:test": "cd PoCs/arcade-shooter && npm run test",
+    "arcade-shooter:test:watch": "cd PoCs/arcade-shooter && npm run test:watch"
   },
   "repository": {
     "type": "git",
