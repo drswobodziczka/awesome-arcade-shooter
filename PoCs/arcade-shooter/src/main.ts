@@ -10,6 +10,7 @@ const CONFIG = {
   BULLET_SPEED: 7,
   BULLET_SIZE: 5,
   ENEMY_SPEED: 2,
+  ENEMY_HORIZONTAL_SPEED: 2,
   ENEMY_SIZE: 30,
   ENEMY_SPAWN_INTERVAL: 1500,
   ENEMY_SHOOT_INTERVAL: 1000,
@@ -24,6 +25,7 @@ interface Bullet extends GameObject {
 
 interface Enemy extends GameObject {
   lastShot: number;
+  vx: number; // horizontal velocity
 }
 
 // Game state
@@ -130,12 +132,14 @@ function update() {
   // Spawn enemies
   if (now - game.lastEnemySpawn > CONFIG.ENEMY_SPAWN_INTERVAL) {
     const x = Math.random() * (CONFIG.CANVAS_WIDTH - CONFIG.ENEMY_SIZE);
+    const vx = (Math.random() - 0.5) * 2 * CONFIG.ENEMY_HORIZONTAL_SPEED;
     game.enemies.push({
       x,
       y: -CONFIG.ENEMY_SIZE,
       width: CONFIG.ENEMY_SIZE,
       height: CONFIG.ENEMY_SIZE,
       lastShot: now,
+      vx,
     });
     game.lastEnemySpawn = now;
   }
@@ -154,6 +158,13 @@ function update() {
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
     enemy.y += CONFIG.ENEMY_SPEED;
+    enemy.x += enemy.vx;
+
+    // Bounce off walls
+    if (enemy.x <= 0 || enemy.x >= CONFIG.CANVAS_WIDTH - enemy.width) {
+      enemy.vx = -enemy.vx;
+      enemy.x = Math.max(0, Math.min(enemy.x, CONFIG.CANVAS_WIDTH - enemy.width));
+    }
 
     // Enemy shooting
     if (now - enemy.lastShot > CONFIG.ENEMY_SHOOT_INTERVAL) {
