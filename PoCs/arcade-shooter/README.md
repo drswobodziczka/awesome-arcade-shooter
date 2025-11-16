@@ -21,6 +21,11 @@ npm run dev
 
 Open http://localhost:5173/
 
+## Controls
+- Arrow keys: Move
+- Space: Shoot
+- Enter: Restart (after game over)
+
 ## Test
 ```bash
 npm test

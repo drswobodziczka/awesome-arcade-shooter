@@ -68,6 +68,10 @@ function init() {
 
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') e.preventDefault();
+    if (e.code === 'Enter' && game.gameOver) {
+      e.preventDefault();
+      location.reload();
+    }
     handleKey(e.code, true);
   });
 
@@ -255,7 +259,7 @@ function drawGameOver() {
   ctx.fillText(`Score: ${game.score}`, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 10);
 
   ctx.font = '18px Arial';
-  ctx.fillText('Press F5 to restart', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50);
+  ctx.fillText('Press Enter to restart', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50);
 }
 
 // Update score display
