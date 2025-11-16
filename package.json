@@ -4,6 +4,10 @@
   "description": "Collection of arcade game projects",
   "private": true,
   "scripts": {
+    "install:arcade-shooter": "cd PoCs/arcade-shooter && npm install",
+    "dev": "npm run arcade-shooter:dev",
+    "build": "npm run arcade-shooter:build",
+    "test": "npm run arcade-shooter:test",
     "arcade-shooter:dev": "cd PoCs/arcade-shooter && npm run dev",
     "arcade-shooter:build": "cd PoCs/arcade-shooter && npm run build",
     "arcade-shooter:preview": "cd PoCs/arcade-shooter && npm run preview",
