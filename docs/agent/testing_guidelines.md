@@ -19,7 +19,7 @@ src/
 
 - Place tests next to source files: `feature.ts` → `feature.test.ts`
 - Use `.test.ts` extension (not `.spec.ts`)
-- Root: `PoCs/arcade-shooter/src/`
+- Project source: `PoCs/arcade-shooter/src/` (configured in vite.config.ts)
 
 ## Test Structure
 
@@ -74,15 +74,16 @@ it('descriptive test name', () => {
 ### When to Mock
 
 ```typescript
-// Mock external dependencies
+// Mock external dependencies (file-level for shared setup)
 vi.mock('./api', () => ({
   fetchData: vi.fn(() => Promise.resolve({ data: 'mocked' }))
 }));
 
-// Mock in test if outcome-critical (Arrange phase)
+// Mock in test when behavior depends on specific response (Arrange phase)
 it('handles API error', () => {
   const mockFetch = vi.fn().mockRejectedValue(new Error('Network error'));
-  // ... test
+  const result = processData(mockFetch);
+  expect(result.error).toBe('Network error');
 });
 ```
 
@@ -113,25 +114,31 @@ function createTestEntity<T>(overrides?: Partial<T>): T {
 - **50-75%**: Utilities, helpers
 - **<50%**: Acceptable for rendering, UI initialization
 
-Run coverage: add `"test:coverage": "vitest run --coverage"` to package.json
+**Setup coverage**: Install `@vitest/coverage-v8`, then add to package.json:
+```json
+"test:coverage": "vitest run --coverage"
+```
 
 ## Common Patterns
 
-### Testing Ranges
+### Boundary Testing
 
 ```typescript
+// Test overlap (positive case)
 it('detects collision when objects overlap', () => {
   const a = { x: 0, y: 0, width: 10, height: 10 };
   const b = { x: 5, y: 5, width: 10, height: 10 };
   expect(checkCollision(a, b)).toBe(true);
 });
 
-it('detects no collision when objects are adjacent', () => {
+// Test edge case (boundary)
+it('detects no collision when edges touch', () => {
   const a = { x: 0, y: 0, width: 10, height: 10 };
-  const b = { x: 10, y: 0, width: 10, height: 10 }; // touching edge
+  const b = { x: 10, y: 0, width: 10, height: 10 };
   expect(checkCollision(a, b)).toBe(false);
 });
 ```
+Reference: `PoCs/arcade-shooter/src/main.test.ts:4-52` for complete collision test suite
 
 ### Testing Errors
 
@@ -152,10 +159,18 @@ it('fetches player data', async () => {
 
 ## Vitest Config (vite.config.ts)
 
+**Current config:**
 ```typescript
 test: {
-  globals: true,        // use global describe/it/expect
-  environment: 'jsdom', // if testing DOM
+  globals: true  // enables global describe/it/expect
+}
+```
+
+**Optional enhancements:**
+```typescript
+test: {
+  globals: true,
+  environment: 'jsdom',  // for DOM testing (needs jsdom package)
   coverage: {
     provider: 'v8',
     reporter: ['text', 'html'],
@@ -171,6 +186,7 @@ test: {
 - Tests that take >1s (integration, not unit)
 - Testing implementation details vs. behavior
 - 100% coverage obsession (diminishing returns)
+- Brittle snapshot overuse (prefer explicit assertions)
 
 ## Maintenance
 
