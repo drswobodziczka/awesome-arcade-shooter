@@ -1,4 +1,7 @@
 import { GameObject, checkCollision } from './utils';
+import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties } from './enemies';
+import { spawnEnemies, SpawnTimers } from './spawning';
+import { Bullet, draw as renderGame, drawGameOver as renderGameOver } from './rendering';
 
 // Game configuration
 const CONFIG = {
@@ -9,24 +12,10 @@ const CONFIG = {
   PLAYER_SHOOT_INTERVAL: 200,
   BULLET_SPEED: 7,
   BULLET_SIZE: 5,
-  ENEMY_SPEED: 2,
-  ENEMY_HORIZONTAL_SPEED: 2,
-  ENEMY_SIZE: 30,
-  ENEMY_SPAWN_INTERVAL: 1500,
-  ENEMY_SHOOT_INTERVAL: 1000,
+  STANDARD_ENEMY_SPAWN_INTERVAL: 1000,
+  SPECIAL_ENEMY_SPAWN_INTERVAL: 4500, // ~4.5x slower for special types
   ENEMY_BULLET_SPEED_MULT: 0.7,
 };
-
-// Types
-
-interface Bullet extends GameObject {
-  vy: number;
-}
-
-interface Enemy extends GameObject {
-  lastShot: number;
-  vx: number; // horizontal velocity
-}
 
 // Game state
 const game = {
@@ -34,6 +23,7 @@ const game = {
   ctx: null as CanvasRenderingContext2D | null,
   score: 0,
   gameOver: false,
+  gameStartTime: 0,
   player: {
     x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.PLAYER_SIZE / 2,
     y: CONFIG.CANVAS_HEIGHT - CONFIG.PLAYER_SIZE - 20,
@@ -50,7 +40,12 @@ const game = {
     down: false,
     space: false,
   },
-  lastEnemySpawn: 0,
+  spawnTimers: {
+    lastStandardSpawn: 0,
+    lastYellowSpawn: 0,
+    lastPurpleSpawn: 0,
+    lastTankSpawn: 0,
+  } as SpawnTimers,
   lastPlayerShot: 0,
 };
 
@@ -67,6 +62,14 @@ function handleKey(code: string, pressed: boolean) {
 function init() {
   game.ctx = game.canvas.getContext('2d');
   if (!game.ctx) throw new Error('Failed to get canvas context');
+
+  game.gameStartTime = Date.now();
+
+  // Reset spawn timers
+  game.spawnTimers.lastStandardSpawn = 0;
+  game.spawnTimers.lastYellowSpawn = 0;
+  game.spawnTimers.lastPurpleSpawn = 0;
+  game.spawnTimers.lastTankSpawn = 0;
 
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') e.preventDefault();
@@ -85,12 +88,15 @@ function init() {
 // Main game loop
 function gameLoop() {
   if (game.gameOver) {
-    drawGameOver();
+    renderGameOver(game.ctx!, game.score, {
+      canvasWidth: CONFIG.CANVAS_WIDTH,
+      canvasHeight: CONFIG.CANVAS_HEIGHT,
+    });
     return;
   }
 
   update();
-  draw();
+  render();
   requestAnimationFrame(gameLoop);
 }
 
@@ -129,62 +135,94 @@ function update() {
     game.lastPlayerShot = now;
   }
 
+  // Calculate game time
+  const gameTime = now - game.gameStartTime;
+
   // Spawn enemies
-  if (now - game.lastEnemySpawn > CONFIG.ENEMY_SPAWN_INTERVAL) {
-    const x = Math.random() * (CONFIG.CANVAS_WIDTH - CONFIG.ENEMY_SIZE);
-    const vx = (Math.random() - 0.5) * 2 * CONFIG.ENEMY_HORIZONTAL_SPEED;
-    game.enemies.push({
-      x,
-      y: -CONFIG.ENEMY_SIZE,
-      width: CONFIG.ENEMY_SIZE,
-      height: CONFIG.ENEMY_SIZE,
-      lastShot: now,
-      vx,
-    });
-    game.lastEnemySpawn = now;
-  }
+  spawnEnemies(game.enemies, game.spawnTimers, gameTime, now, {
+    canvasWidth: CONFIG.CANVAS_WIDTH,
+    standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
+    specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
+  });
 
   // Update bullets
   const updateBullets = (bullets: Bullet[], inBounds: (b: Bullet) => boolean) => {
     return bullets.filter((bullet) => {
       bullet.y += bullet.vy;
+      if (bullet.vx !== undefined) {
+        bullet.x += bullet.vx; // diagonal movement
+      }
       return inBounds(bullet);
     });
   };
 
-  game.bullets = updateBullets(game.bullets, (b) => b.y > -b.height);
-  game.enemyBullets = updateBullets(game.enemyBullets, (b) => b.y < CONFIG.CANVAS_HEIGHT);
+  game.bullets = updateBullets(
+    game.bullets,
+    (b) => b.y > -b.height && b.x > -b.width && b.x < CONFIG.CANVAS_WIDTH
+  );
+  game.enemyBullets = updateBullets(
+    game.enemyBullets,
+    (b) => b.y < CONFIG.CANVAS_HEIGHT && b.x > -b.width && b.x < CONFIG.CANVAS_WIDTH
+  );
 
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
-    enemy.y += CONFIG.ENEMY_SPEED;
-    enemy.x += enemy.vx;
-
-    // Bounce off walls
-    if (enemy.x <= 0 || enemy.x >= CONFIG.CANVAS_WIDTH - enemy.width) {
-      enemy.vx = -enemy.vx;
-      enemy.x = Math.max(0, Math.min(enemy.x, CONFIG.CANVAS_WIDTH - enemy.width));
-    }
+    // Update movement based on enemy type
+    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH);
 
     // Enemy shooting
-    if (now - enemy.lastShot > CONFIG.ENEMY_SHOOT_INTERVAL) {
-      const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT);
-      bullet.y = enemy.y + enemy.height;
-      game.enemyBullets.push(bullet);
+    const props = getEnemyProperties(enemy.type);
+    if (props.canShoot && now - enemy.lastShot > props.shootInterval) {
+      if (enemy.type === EnemyType.YELLOW) {
+        // Yellow enemies shoot three bullets: left diagonal, center straight, right diagonal
+        const centerX = enemy.x + enemy.width / 2;
+        const bottomY = enemy.y + enemy.height;
+        const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
+
+        // Left diagonal bullet
+        const leftBullet = createBullet(enemy, bulletSpeed);
+        leftBullet.y = bottomY;
+        leftBullet.x = centerX - CONFIG.BULLET_SIZE / 2 - 15;
+        leftBullet.vx = -2;
+        game.enemyBullets.push(leftBullet);
+
+        // Center straight bullet
+        const centerBullet = createBullet(enemy, bulletSpeed);
+        centerBullet.y = bottomY;
+        game.enemyBullets.push(centerBullet);
+
+        // Right diagonal bullet
+        const rightBullet = createBullet(enemy, bulletSpeed);
+        rightBullet.y = bottomY;
+        rightBullet.x = centerX - CONFIG.BULLET_SIZE / 2 + 15;
+        rightBullet.vx = 2;
+        game.enemyBullets.push(rightBullet);
+      } else {
+        // Standard straight bullet
+        const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT);
+        bullet.y = enemy.y + enemy.height;
+        game.enemyBullets.push(bullet);
+      }
       enemy.lastShot = now;
     }
 
-    return enemy.y < CONFIG.CANVAS_HEIGHT;
+    return enemy.y < CONFIG.CANVAS_HEIGHT && enemy.y > -enemy.height;
   });
 
   // Check bullet-enemy collisions
   game.bullets = game.bullets.filter((bullet) => {
     for (let i = 0; i < game.enemies.length; i++) {
       if (checkCollision(bullet, game.enemies[i])) {
-        game.enemies.splice(i, 1);
-        game.score += 10;
-        updateScore();
-        return false;
+        const enemy = game.enemies[i];
+        enemy.hp -= 1;
+
+        // Remove enemy if HP depleted
+        if (enemy.hp <= 0) {
+          game.enemies.splice(i, 1);
+          game.score += 10;
+          updateScore();
+        }
+        return false; // bullet is consumed
       }
     }
     return true;
@@ -206,71 +244,19 @@ function update() {
   }
 }
 
-// Draw triangle
-function drawTriangle(ctx: CanvasRenderingContext2D, obj: GameObject, pointUp: boolean) {
-  ctx.beginPath();
-  if (pointUp) {
-    ctx.moveTo(obj.x + obj.width / 2, obj.y);
-    ctx.lineTo(obj.x, obj.y + obj.height);
-    ctx.lineTo(obj.x + obj.width, obj.y + obj.height);
-  } else {
-    ctx.moveTo(obj.x + obj.width / 2, obj.y + obj.height);
-    ctx.lineTo(obj.x, obj.y);
-    ctx.lineTo(obj.x + obj.width, obj.y);
-  }
-  ctx.closePath();
-  ctx.fill();
-}
-
-// Draw bullets
-function drawBullets(ctx: CanvasRenderingContext2D, bullets: Bullet[], color: string) {
-  ctx.fillStyle = color;
-  for (const bullet of bullets) {
-    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-  }
-}
-
-// Draw everything
-function draw() {
-  const ctx = game.ctx!;
-
-  // Clear canvas
-  ctx.fillStyle = '#16213e';
-  ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-
-  // Draw player
-  ctx.fillStyle = '#00d4ff';
-  drawTriangle(ctx, game.player, true);
-
-  // Draw bullets
-  drawBullets(ctx, game.bullets, '#00ff00');
-  drawBullets(ctx, game.enemyBullets, '#ff6b00');
-
-  // Draw enemies
-  ctx.fillStyle = '#e94560';
-  for (const enemy of game.enemies) {
-    drawTriangle(ctx, enemy, false);
-  }
-}
-
-// Draw game over screen
-function drawGameOver() {
-  const ctx = game.ctx!;
-
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-
-  ctx.fillStyle = '#e94560';
-  ctx.font = '48px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('GAME OVER', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 - 40);
-
-  ctx.fillStyle = '#fff';
-  ctx.font = '24px Arial';
-  ctx.fillText(`Score: ${game.score}`, CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 10);
-
-  ctx.font = '18px Arial';
-  ctx.fillText('Press Enter to restart', CONFIG.CANVAS_WIDTH / 2, CONFIG.CANVAS_HEIGHT / 2 + 50);
+// Render game
+function render() {
+  renderGame(
+    game.ctx!,
+    game.player,
+    game.enemies,
+    game.bullets,
+    game.enemyBullets,
+    {
+      canvasWidth: CONFIG.CANVAS_WIDTH,
+      canvasHeight: CONFIG.CANVAS_HEIGHT,
+    }
+  );
 }
 
 // Update score display
