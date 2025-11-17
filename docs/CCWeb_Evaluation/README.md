@@ -59,3 +59,11 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Instrukcje muszą być podawane manualnie lub przez inne mechanizmy
 
 **Impact:** Brak seamless integration z project-specific guidelines i instrukcjami.
+
+### 6. Limited PR Creation Control
+(-) Jedna sesja może otworzyć tylko jeden PR
+- Wyłącznie user może stworzyć PR klikając przycisk w UI
+- CC Web nie może programatically utworzyć PR (brak `gh` CLI)
+- Agent może tylko przygotować commity i branch, ale nie otworzyć PR samodzielnie
+
+**Impact:** User musi manualnie kliknąć przycisk aby otworzyć PR; brak automatyzacji tego kroku.
