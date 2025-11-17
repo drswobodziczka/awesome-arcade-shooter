@@ -13,6 +13,15 @@
 - Seamless workflow między web interface a GitHub Actions
 - Współpraca CC Web + automated workflows zwiększa produktywność
 
+### 3. Claude Code GitHub Action (cc-action)
+
+**(+) Strengths:**
+- Robi review i reaguje na komenty
+- (+!) Na początek nie ma za wiele uprawnień, ale można je rozszerzać w workflow (security-first approach)
+
+**(-) Limitations:**
+- Wykonuje się jako workflow CI gh actions == wolne
+
 ## Limitations & Issues
 
 ### 1. No GitHub CLI Access
