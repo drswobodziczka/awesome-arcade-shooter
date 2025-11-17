@@ -65,6 +65,12 @@ function init() {
 
   game.gameStartTime = Date.now();
 
+  // Reset spawn timers
+  game.spawnTimers.lastStandardSpawn = 0;
+  game.spawnTimers.lastYellowSpawn = 0;
+  game.spawnTimers.lastPurpleSpawn = 0;
+  game.spawnTimers.lastTankSpawn = 0;
+
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') e.preventDefault();
     if (e.code === 'Enter' && game.gameOver) {
@@ -150,7 +156,10 @@ function update() {
     });
   };
 
-  game.bullets = updateBullets(game.bullets, (b) => b.y > -b.height);
+  game.bullets = updateBullets(
+    game.bullets,
+    (b) => b.y > -b.height && b.x > -b.width && b.x < CONFIG.CANVAS_WIDTH
+  );
   game.enemyBullets = updateBullets(
     game.enemyBullets,
     (b) => b.y < CONFIG.CANVAS_HEIGHT && b.x > -b.width && b.x < CONFIG.CANVAS_WIDTH
@@ -159,7 +168,7 @@ function update() {
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
     // Update movement based on enemy type
-    updateEnemyMovement(enemy, game.player.x, game.player.y, CONFIG.CANVAS_WIDTH);
+    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH);
 
     // Enemy shooting
     const props = getEnemyProperties(enemy.type);

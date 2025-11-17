@@ -104,6 +104,7 @@ export function updateEnemyMovement(
   enemy: Enemy,
   playerX: number,
   playerY: number,
+  playerWidth: number,
   canvasWidth: number
 ): void {
   const props = getEnemyProperties(enemy.type);
@@ -125,9 +126,14 @@ export function updateEnemyMovement(
       enemy.y += enemy.vy;
       enemy.x += enemy.vx;
 
-      // Randomly reverse vertical direction
-      if (Math.random() < 0.01) {
+      // Randomly reverse vertical direction, but not if too far up
+      if (Math.random() < 0.01 && enemy.y > 50) {
         enemy.vy = -enemy.vy;
+      }
+
+      // Force downward if going too far up
+      if (enemy.y < 0 && enemy.vy < 0) {
+        enemy.vy = Math.abs(enemy.vy);
       }
 
       // Bounce horizontally
@@ -140,7 +146,7 @@ export function updateEnemyMovement(
     case EnemyType.PURPLE:
       // Track player position
       const centerX = enemy.x + enemy.width / 2;
-      const targetX = playerX + 15; // player is 30x30, center at +15
+      const targetX = playerX + playerWidth / 2;
 
       // Move toward player horizontally
       if (centerX < targetX - 5) {

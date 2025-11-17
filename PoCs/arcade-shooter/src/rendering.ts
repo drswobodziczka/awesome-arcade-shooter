@@ -71,7 +71,7 @@ export function draw(
     drawTriangle(ctx, enemy, false);
 
     // Draw HP bar for TANK enemies
-    if (enemy.type === EnemyType.TANK && enemy.hp < enemy.maxHp) {
+    if (enemy.type === EnemyType.TANK) {
       const barWidth = enemy.width;
       const barHeight = 4;
       const barX = enemy.x;
@@ -82,8 +82,8 @@ export function draw(
       ctx.fillRect(barX, barY, barWidth, barHeight);
 
       // HP bar
-      ctx.fillStyle = '#ff0000';
       const hpRatio = enemy.hp / enemy.maxHp;
+      ctx.fillStyle = hpRatio > 0.5 ? '#2ecc71' : hpRatio > 0.25 ? '#f39c12' : '#e74c3c';
       ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
     }
   }
