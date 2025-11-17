@@ -42,3 +42,20 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Ogranicza możliwości integracji z external data sources (GitHub API, databases, etc.)
 
 **Impact:** Web version ma tylko wbudowane narzędzia; brak dostępu do ekosystemu MCP.
+
+### 4. Branch Management Confusion
+(-) CC Web czasem tworzy kilka branchy w jednej sesji
+- Nie wiadomo dokładnie na jakim branchu się jest
+- Niejasne do którego brancha jest PR
+- Problem: jeśli w sesji jest kilka branchy, każdy z PR - do którego przekieruje button "View PR"?
+- Brak przejrzystości w zarządzaniu wieloma branchami w ramach jednej sesji
+
+**Impact:** Confusion w workflow, trudność w śledzeniu zmian i PR-ów.
+
+### 5. No CLAUDE.MD Integration
+(-) Brak możliwości pracy z CLAUDE.MD
+- Komenda `#` nie dodaje zawartości CLAUDE.MD do pamięci/kontekstu
+- Brak mechanizmu do automatycznego uwzględniania project instructions
+- Instrukcje muszą być podawane manualnie lub przez inne mechanizmy
+
+**Impact:** Brak seamless integration z project-specific guidelines i instrukcjami.
