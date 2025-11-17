@@ -5,6 +5,7 @@ export enum EnemyType {
   YELLOW = 'YELLOW',
   PURPLE = 'PURPLE',
   TANK = 'TANK',
+  TELEPORT = 'TELEPORT',
 }
 
 export interface Enemy extends GameObject {
@@ -14,6 +15,7 @@ export interface Enemy extends GameObject {
   vy: number;
   hp: number;
   maxHp: number;
+  lastTeleport?: number;
 }
 
 export interface EnemyProperties {
@@ -72,6 +74,17 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         canShoot: true,
         hp: 5,
       };
+
+    case EnemyType.TELEPORT:
+      return {
+        size: 25, // slightly smaller than player
+        speed: 0.3, // very slow between teleports
+        horizontalSpeed: 0,
+        color: '#ff00ff', // magenta (will change dynamically)
+        shootInterval: 1500,
+        canShoot: true,
+        hp: 1,
+      };
   }
 }
 
@@ -85,7 +98,7 @@ export function createEnemy(
   const props = getEnemyProperties(type);
   const vx = (Math.random() - 0.5) * 2 * props.horizontalSpeed;
 
-  return {
+  const enemy: Enemy = {
     type,
     x,
     y,
@@ -97,6 +110,13 @@ export function createEnemy(
     hp: props.hp,
     maxHp: props.hp,
   };
+
+  // Initialize lastTeleport for TELEPORT enemy
+  if (type === EnemyType.TELEPORT) {
+    enemy.lastTeleport = now;
+  }
+
+  return enemy;
 }
 
 // Update enemy movement based on type
@@ -105,7 +125,8 @@ export function updateEnemyMovement(
   playerX: number,
   playerY: number,
   playerWidth: number,
-  canvasWidth: number
+  canvasWidth: number,
+  now?: number
 ): void {
   const props = getEnemyProperties(enemy.type);
 
@@ -172,6 +193,22 @@ export function updateEnemyMovement(
         enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
       }
       break;
+
+    case EnemyType.TELEPORT:
+      // Teleport every second to lower Y position with random X
+      if (now && enemy.lastTeleport && now - enemy.lastTeleport >= 1000) {
+        // Teleport: jump down 100-150px and to random X
+        enemy.y += 100 + Math.random() * 50;
+        enemy.x = Math.random() * (canvasWidth - enemy.width);
+        enemy.lastTeleport = now;
+      }
+
+      // Between teleports, move down very slowly
+      enemy.y += props.speed;
+
+      // Keep in bounds horizontally
+      enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
+      break;
   }
 }
 
@@ -186,6 +223,8 @@ export function isEnemyTypeUnlocked(type: EnemyType, gameTime: number): boolean 
       return gameTime >= 20000; // 20 seconds
     case EnemyType.TANK:
       return gameTime >= 20000; // 20 seconds
+    case EnemyType.TELEPORT:
+      return gameTime >= 30000; // 30 seconds
   }
 }
 

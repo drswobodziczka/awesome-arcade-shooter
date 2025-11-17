@@ -5,6 +5,7 @@ export interface SpawnTimers {
   lastYellowSpawn: number;
   lastPurpleSpawn: number;
   lastTankSpawn: number;
+  lastTeleportSpawn: number;
 }
 
 export interface SpawnConfig {
@@ -60,5 +61,16 @@ export function spawnEnemies(
     const x = Math.random() * (config.canvasWidth - props.size);
     enemies.push(createEnemy(EnemyType.TANK, x, -props.size, now));
     timers.lastTankSpawn = now;
+  }
+
+  // Spawn TELEPORT enemies (after 30s, 5x slower)
+  if (
+    isEnemyTypeUnlocked(EnemyType.TELEPORT, gameTime) &&
+    now - timers.lastTeleportSpawn > config.specialInterval
+  ) {
+    const props = getEnemyProperties(EnemyType.TELEPORT);
+    const x = Math.random() * (config.canvasWidth - props.size);
+    enemies.push(createEnemy(EnemyType.TELEPORT, x, -props.size, now));
+    timers.lastTeleportSpawn = now;
   }
 }

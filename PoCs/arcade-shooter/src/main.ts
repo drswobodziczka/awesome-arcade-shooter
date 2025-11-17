@@ -45,6 +45,7 @@ const game = {
     lastYellowSpawn: 0,
     lastPurpleSpawn: 0,
     lastTankSpawn: 0,
+    lastTeleportSpawn: 0,
   } as SpawnTimers,
   lastPlayerShot: 0,
 };
@@ -70,6 +71,7 @@ function init() {
   game.spawnTimers.lastYellowSpawn = 0;
   game.spawnTimers.lastPurpleSpawn = 0;
   game.spawnTimers.lastTankSpawn = 0;
+  game.spawnTimers.lastTeleportSpawn = 0;
 
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') e.preventDefault();
@@ -168,7 +170,7 @@ function update() {
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
     // Update movement based on enemy type
-    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH);
+    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH, now);
 
     // Enemy shooting
     const props = getEnemyProperties(enemy.type);
@@ -197,6 +199,27 @@ function update() {
         rightBullet.x = centerX - CONFIG.BULLET_SIZE / 2 + 15;
         rightBullet.vx = 2;
         game.enemyBullets.push(rightBullet);
+      } else if (enemy.type === EnemyType.TELEPORT) {
+        // Shoot towards player
+        const enemyCenterX = enemy.x + enemy.width / 2;
+        const enemyCenterY = enemy.y + enemy.height / 2;
+        const playerCenterX = game.player.x + game.player.width / 2;
+        const playerCenterY = game.player.y + game.player.height / 2;
+
+        // Calculate direction vector
+        const dx = playerCenterX - enemyCenterX;
+        const dy = playerCenterY - enemyCenterY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Normalize and scale by bullet speed
+        const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
+        const vx = (dx / distance) * bulletSpeed;
+        const vy = (dy / distance) * bulletSpeed;
+
+        const bullet = createBullet(enemy, vy);
+        bullet.y = enemy.y + enemy.height;
+        bullet.vx = vx;
+        game.enemyBullets.push(bullet);
       } else {
         // Standard straight bullet
         const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT);
