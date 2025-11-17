@@ -28,3 +28,32 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego kopiowania errorów lub manual intervention
 
 **Impact:** Workflow "build failed" → użytkownik musi ręcznie podać logi lub opisać problem.
+
+### 3. Single PR Per Session Limitation
+(-) Jedna sesja może otworzyć tylko jeden PR, wyłącznie może to zrobić user klikając w button.
+- Brak możliwości tworzenia wielu PR w jednej sesji
+- Tylko user może utworzyć PR (przez UI button)
+- Ogranicza workflow przy pracy nad wieloma feature'ami
+
+### 4. Branch Management Issues
+(-) CC Web pierdoli czasem branche i w jednej sesji robi ich kilka.
+- Niejasne na jakim jesteśmy branchu w danym momencie
+- Do którego brancha jest PR?
+- Co się dzieje jak w sesji mamy kilka branchy i każda z PR - do którego przekieruje wówczas button "View PR"?
+
+**Impact:** Chaos w zarządzaniu branchami, nieprzewidywalność UI, trudności w śledzeniu stanu pracy.
+
+### 5. CLAUDE.MD Integration Issues
+(-) Nie ma możliwości pracy z CLAUDE.MD - '#' nie dodaje do pamięci.
+- Brak wsparcia dla slash command '#' do dodawania context z CLAUDE.MD
+- Ogranicza możliwość konfiguracji project-specific instructions
+
+### 6. No MCP and Tools Configuration
+(-!) Brak konfiguracji MCP i narzędzi.
+- Niemożność rozszerzenia capabilities przez MCP servers
+- Brak dostępu do custom tools
+- Ograniczona extensibility w porównaniu do desktop/CLI version
+
+### 7. CLI Teleport (?)
+(?) Teleport do CLI
+- Niejasna funkcjonalność lub brak możliwości przełączenia się do CLI mid-session
