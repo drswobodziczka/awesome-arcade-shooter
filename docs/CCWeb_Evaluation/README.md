@@ -42,6 +42,13 @@ Podoba się praca w CC Web w przeglądarce
 - Brak potrzeby instalacji lokalnej
 - Łatwe przełączanie między projektami w różnych tabach
 
+### 6. Vibe Coding with PR/Issue-Driven Development
+(+) Vibe coding pull requestami, issuesami, projektem i iteracjami zwiększa czas o trochę, ale generalnie daje większą kontrolę jakości i zgodności ze specyfikacją, utrzymuje HITL
+- Lepszą kontrolę nad jakością kodu poprzez PR reviews
+- Większą zgodność z wymaganiami i specyfikacją
+- Utrzymanie Human In The Loop - użytkownik ma przegląd każdego kroku
+- Trade-off: nieco więcej czasu, ale wyższa pewność poprawności
+
 ## Limitations & Issues (-)
 
 ### 1. No File Mentions / Slash Commands
