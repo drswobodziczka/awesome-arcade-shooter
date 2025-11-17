@@ -27,6 +27,11 @@ Classic arcade-style shooter game.
 
 ## Documentation References
 
+### Coding Guidelines
+**Location:** `docs/coding-guidelines.md`
+
+TDD methodology and development iteration cycle. Mandatory for all feature implementation.
+
 ### Tech Stack Justification
 **Location:** `docs/tech-stack-justification.md`
 
