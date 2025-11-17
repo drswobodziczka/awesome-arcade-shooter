@@ -1,5 +1,18 @@
 # Claude Code Web - Evaluation Notes
 
+## Strengths
+
+### 1. Excellent Repository Context Awareness
+(+) Świetnie odnajduje się w kontekście repozytorium
+- Szybko rozumie strukturę projektu
+- Efektywnie porusza się po codebase
+
+### 2. GitHub Ecosystem Synergy
+(+) Side-effect: pracując w ekosystemie GitHub + Web, praca w teamie **CC Web + CC GitHub Action + Developer** ma jeszcze większą wartość
+- Integracja z [claude-code-action](https://github.com/anthropics/claude-code-action)
+- Seamless workflow między web interface a GitHub Actions
+- Współpraca CC Web + automated workflows zwiększa produktywność
+
 ## Limitations & Issues
 
 ### 1. No GitHub CLI Access
