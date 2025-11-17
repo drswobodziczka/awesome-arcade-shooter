@@ -126,6 +126,7 @@ export function updateEnemyMovement(
   playerY: number,
   playerWidth: number,
   canvasWidth: number,
+  canvasHeight: number,
   now?: number
 ): void {
   const props = getEnemyProperties(enemy.type);
@@ -198,8 +199,14 @@ export function updateEnemyMovement(
       // Teleport every second to lower Y position with random X
       if (now && enemy.lastTeleport && now - enemy.lastTeleport >= 1000) {
         // Teleport: jump down 100-150px and to random X
-        enemy.y += 100 + Math.random() * 50;
-        enemy.x = Math.random() * (canvasWidth - enemy.width);
+        const teleportDistance = 100 + Math.random() * 50;
+        const newY = enemy.y + teleportDistance;
+
+        // Only teleport if it won't go off-screen
+        if (newY < canvasHeight - enemy.height) {
+          enemy.y = newY;
+          enemy.x = Math.random() * (canvasWidth - enemy.width);
+        }
         enemy.lastTeleport = now;
       }
 

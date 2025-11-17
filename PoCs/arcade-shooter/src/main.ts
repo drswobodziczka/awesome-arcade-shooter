@@ -170,7 +170,7 @@ function update() {
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
     // Update movement based on enemy type
-    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH, now);
+    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, now);
 
     // Enemy shooting
     const props = getEnemyProperties(enemy.type);
@@ -211,15 +211,18 @@ function update() {
         const dy = playerCenterY - enemyCenterY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Normalize and scale by bullet speed
-        const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
-        const vx = (dx / distance) * bulletSpeed;
-        const vy = (dy / distance) * bulletSpeed;
+        // Only shoot if there's a valid distance (avoid division by zero)
+        if (distance > 0.1) {
+          // Normalize and scale by bullet speed
+          const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
+          const vx = (dx / distance) * bulletSpeed;
+          const vy = (dy / distance) * bulletSpeed;
 
-        const bullet = createBullet(enemy, vy);
-        bullet.y = enemy.y + enemy.height;
-        bullet.vx = vx;
-        game.enemyBullets.push(bullet);
+          const bullet = createBullet(enemy, vy);
+          bullet.y = enemy.y + enemy.height;
+          bullet.vx = vx;
+          game.enemyBullets.push(bullet);
+        }
       } else {
         // Standard straight bullet
         const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT);
