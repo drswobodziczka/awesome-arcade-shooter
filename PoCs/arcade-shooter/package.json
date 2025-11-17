@@ -1,16 +1,13 @@
 {
-  "name": "awesome-arcade-shooter",
+  "name": "arcade-shooter",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "description": "Classic arcade-style plane shooter game",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -20,8 +17,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@vitest/ui": "^4.0.9",
-    "jsdom": "^27.2.0",
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vitest": "^4.0.9"
