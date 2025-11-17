@@ -70,7 +70,7 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         color: '#2ecc71',
         shootInterval: 2000,
         canShoot: true,
-        hp: 3,
+        hp: 5,
       };
   }
 }
@@ -181,11 +181,11 @@ export function isEnemyTypeUnlocked(type: EnemyType, gameTime: number): boolean 
     case EnemyType.STANDARD:
       return true; // always available
     case EnemyType.YELLOW:
-      return gameTime >= 30000; // 30 seconds
+      return gameTime >= 10000; // 10 seconds
     case EnemyType.PURPLE:
-      return gameTime >= 60000; // 60 seconds
+      return gameTime >= 20000; // 20 seconds
     case EnemyType.TANK:
-      return gameTime >= 120000; // 120 seconds
+      return gameTime >= 20000; // 20 seconds
   }
 }
 

@@ -12,8 +12,8 @@ const CONFIG = {
   PLAYER_SHOOT_INTERVAL: 200,
   BULLET_SPEED: 7,
   BULLET_SIZE: 5,
-  STANDARD_ENEMY_SPAWN_INTERVAL: 1500,
-  SPECIAL_ENEMY_SPAWN_INTERVAL: 7500, // 5x slower for special types
+  STANDARD_ENEMY_SPAWN_INTERVAL: 1000,
+  SPECIAL_ENEMY_SPAWN_INTERVAL: 4500, // ~4.5x slower for special types
   ENEMY_BULLET_SPEED_MULT: 0.7,
 };
 
@@ -174,7 +174,7 @@ function update() {
     const props = getEnemyProperties(enemy.type);
     if (props.canShoot && now - enemy.lastShot > props.shootInterval) {
       if (enemy.type === EnemyType.YELLOW) {
-        // Yellow enemies shoot two diagonal bullets
+        // Yellow enemies shoot three bullets: left diagonal, center straight, right diagonal
         const centerX = enemy.x + enemy.width / 2;
         const bottomY = enemy.y + enemy.height;
         const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
@@ -182,14 +182,19 @@ function update() {
         // Left diagonal bullet
         const leftBullet = createBullet(enemy, bulletSpeed);
         leftBullet.y = bottomY;
-        leftBullet.x = centerX - CONFIG.BULLET_SIZE / 2 - 10;
+        leftBullet.x = centerX - CONFIG.BULLET_SIZE / 2 - 15;
         leftBullet.vx = -2;
         game.enemyBullets.push(leftBullet);
+
+        // Center straight bullet
+        const centerBullet = createBullet(enemy, bulletSpeed);
+        centerBullet.y = bottomY;
+        game.enemyBullets.push(centerBullet);
 
         // Right diagonal bullet
         const rightBullet = createBullet(enemy, bulletSpeed);
         rightBullet.y = bottomY;
-        rightBullet.x = centerX - CONFIG.BULLET_SIZE / 2 + 10;
+        rightBullet.x = centerX - CONFIG.BULLET_SIZE / 2 + 15;
         rightBullet.vx = 2;
         game.enemyBullets.push(rightBullet);
       } else {
