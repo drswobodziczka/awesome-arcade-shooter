@@ -1,4 +1,12 @@
 import { GameObject, checkCollision } from './utils';
+import {
+  Enemy,
+  EnemyType,
+  createEnemy,
+  updateEnemyMovement,
+  getEnemyProperties,
+  isEnemyTypeUnlocked,
+} from './enemies';
 
 // Game configuration
 const CONFIG = {
@@ -9,11 +17,8 @@ const CONFIG = {
   PLAYER_SHOOT_INTERVAL: 200,
   BULLET_SPEED: 7,
   BULLET_SIZE: 5,
-  ENEMY_SPEED: 2,
-  ENEMY_HORIZONTAL_SPEED: 2,
-  ENEMY_SIZE: 30,
-  ENEMY_SPAWN_INTERVAL: 1500,
-  ENEMY_SHOOT_INTERVAL: 1000,
+  STANDARD_ENEMY_SPAWN_INTERVAL: 1500,
+  SPECIAL_ENEMY_SPAWN_INTERVAL: 7500, // 5x slower for special types
   ENEMY_BULLET_SPEED_MULT: 0.7,
 };
 
@@ -21,11 +26,7 @@ const CONFIG = {
 
 interface Bullet extends GameObject {
   vy: number;
-}
-
-interface Enemy extends GameObject {
-  lastShot: number;
-  vx: number; // horizontal velocity
+  vx?: number; // for diagonal shots
 }
 
 // Game state
@@ -34,6 +35,7 @@ const game = {
   ctx: null as CanvasRenderingContext2D | null,
   score: 0,
   gameOver: false,
+  gameStartTime: 0,
   player: {
     x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.PLAYER_SIZE / 2,
     y: CONFIG.CANVAS_HEIGHT - CONFIG.PLAYER_SIZE - 20,
@@ -50,7 +52,10 @@ const game = {
     down: false,
     space: false,
   },
-  lastEnemySpawn: 0,
+  lastStandardSpawn: 0,
+  lastYellowSpawn: 0,
+  lastPurpleSpawn: 0,
+  lastTankSpawn: 0,
   lastPlayerShot: 0,
 };
 
@@ -67,6 +72,8 @@ function handleKey(code: string, pressed: boolean) {
 function init() {
   game.ctx = game.canvas.getContext('2d');
   if (!game.ctx) throw new Error('Failed to get canvas context');
+
+  game.gameStartTime = Date.now();
 
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') e.preventDefault();
@@ -129,62 +136,120 @@ function update() {
     game.lastPlayerShot = now;
   }
 
-  // Spawn enemies
-  if (now - game.lastEnemySpawn > CONFIG.ENEMY_SPAWN_INTERVAL) {
-    const x = Math.random() * (CONFIG.CANVAS_WIDTH - CONFIG.ENEMY_SIZE);
-    const vx = (Math.random() - 0.5) * 2 * CONFIG.ENEMY_HORIZONTAL_SPEED;
-    game.enemies.push({
-      x,
-      y: -CONFIG.ENEMY_SIZE,
-      width: CONFIG.ENEMY_SIZE,
-      height: CONFIG.ENEMY_SIZE,
-      lastShot: now,
-      vx,
-    });
-    game.lastEnemySpawn = now;
+  // Calculate game time
+  const gameTime = now - game.gameStartTime;
+
+  // Spawn standard enemies
+  if (now - game.lastStandardSpawn > CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL) {
+    const props = getEnemyProperties(EnemyType.STANDARD);
+    const x = Math.random() * (CONFIG.CANVAS_WIDTH - props.size);
+    game.enemies.push(createEnemy(EnemyType.STANDARD, x, -props.size, now));
+    game.lastStandardSpawn = now;
+  }
+
+  // Spawn YELLOW enemies (after 30s, 5x slower)
+  if (
+    isEnemyTypeUnlocked(EnemyType.YELLOW, gameTime) &&
+    now - game.lastYellowSpawn > CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL
+  ) {
+    const props = getEnemyProperties(EnemyType.YELLOW);
+    const x = Math.random() * (CONFIG.CANVAS_WIDTH - props.size);
+    game.enemies.push(createEnemy(EnemyType.YELLOW, x, -props.size, now));
+    game.lastYellowSpawn = now;
+  }
+
+  // Spawn PURPLE enemies (after 60s, 5x slower)
+  if (
+    isEnemyTypeUnlocked(EnemyType.PURPLE, gameTime) &&
+    now - game.lastPurpleSpawn > CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL
+  ) {
+    const props = getEnemyProperties(EnemyType.PURPLE);
+    const x = Math.random() * (CONFIG.CANVAS_WIDTH - props.size);
+    game.enemies.push(createEnemy(EnemyType.PURPLE, x, -props.size, now));
+    game.lastPurpleSpawn = now;
+  }
+
+  // Spawn TANK enemies (after 120s, 5x slower)
+  if (
+    isEnemyTypeUnlocked(EnemyType.TANK, gameTime) &&
+    now - game.lastTankSpawn > CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL
+  ) {
+    const props = getEnemyProperties(EnemyType.TANK);
+    const x = Math.random() * (CONFIG.CANVAS_WIDTH - props.size);
+    game.enemies.push(createEnemy(EnemyType.TANK, x, -props.size, now));
+    game.lastTankSpawn = now;
   }
 
   // Update bullets
   const updateBullets = (bullets: Bullet[], inBounds: (b: Bullet) => boolean) => {
     return bullets.filter((bullet) => {
       bullet.y += bullet.vy;
+      if (bullet.vx !== undefined) {
+        bullet.x += bullet.vx; // diagonal movement
+      }
       return inBounds(bullet);
     });
   };
 
   game.bullets = updateBullets(game.bullets, (b) => b.y > -b.height);
-  game.enemyBullets = updateBullets(game.enemyBullets, (b) => b.y < CONFIG.CANVAS_HEIGHT);
+  game.enemyBullets = updateBullets(
+    game.enemyBullets,
+    (b) => b.y < CONFIG.CANVAS_HEIGHT && b.x > -b.width && b.x < CONFIG.CANVAS_WIDTH
+  );
 
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
-    enemy.y += CONFIG.ENEMY_SPEED;
-    enemy.x += enemy.vx;
-
-    // Bounce off walls
-    if (enemy.x <= 0 || enemy.x >= CONFIG.CANVAS_WIDTH - enemy.width) {
-      enemy.vx = -enemy.vx;
-      enemy.x = Math.max(0, Math.min(enemy.x, CONFIG.CANVAS_WIDTH - enemy.width));
-    }
+    // Update movement based on enemy type
+    updateEnemyMovement(enemy, game.player.x, game.player.y, CONFIG.CANVAS_WIDTH);
 
     // Enemy shooting
-    if (now - enemy.lastShot > CONFIG.ENEMY_SHOOT_INTERVAL) {
-      const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT);
-      bullet.y = enemy.y + enemy.height;
-      game.enemyBullets.push(bullet);
+    const props = getEnemyProperties(enemy.type);
+    if (props.canShoot && now - enemy.lastShot > props.shootInterval) {
+      if (enemy.type === EnemyType.YELLOW) {
+        // Yellow enemies shoot two diagonal bullets
+        const centerX = enemy.x + enemy.width / 2;
+        const bottomY = enemy.y + enemy.height;
+        const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
+
+        // Left diagonal bullet
+        const leftBullet = createBullet(enemy, bulletSpeed);
+        leftBullet.y = bottomY;
+        leftBullet.x = centerX - CONFIG.BULLET_SIZE / 2 - 10;
+        leftBullet.vx = -2;
+        game.enemyBullets.push(leftBullet);
+
+        // Right diagonal bullet
+        const rightBullet = createBullet(enemy, bulletSpeed);
+        rightBullet.y = bottomY;
+        rightBullet.x = centerX - CONFIG.BULLET_SIZE / 2 + 10;
+        rightBullet.vx = 2;
+        game.enemyBullets.push(rightBullet);
+      } else {
+        // Standard straight bullet
+        const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT);
+        bullet.y = enemy.y + enemy.height;
+        game.enemyBullets.push(bullet);
+      }
       enemy.lastShot = now;
     }
 
-    return enemy.y < CONFIG.CANVAS_HEIGHT;
+    return enemy.y < CONFIG.CANVAS_HEIGHT && enemy.y > -enemy.height;
   });
 
   // Check bullet-enemy collisions
   game.bullets = game.bullets.filter((bullet) => {
     for (let i = 0; i < game.enemies.length; i++) {
       if (checkCollision(bullet, game.enemies[i])) {
-        game.enemies.splice(i, 1);
-        game.score += 10;
-        updateScore();
-        return false;
+        const enemy = game.enemies[i];
+        enemy.hp -= 1;
+
+        // Remove enemy if HP depleted
+        if (enemy.hp <= 0) {
+          game.enemies.splice(i, 1);
+          game.score += 10;
+          updateScore();
+        }
+        return false; // bullet is consumed
       }
     }
     return true;
@@ -247,9 +312,27 @@ function draw() {
   drawBullets(ctx, game.enemyBullets, '#ff6b00');
 
   // Draw enemies
-  ctx.fillStyle = '#e94560';
   for (const enemy of game.enemies) {
+    const props = getEnemyProperties(enemy.type);
+    ctx.fillStyle = props.color;
     drawTriangle(ctx, enemy, false);
+
+    // Draw HP bar for TANK enemies
+    if (enemy.type === EnemyType.TANK && enemy.hp < enemy.maxHp) {
+      const barWidth = enemy.width;
+      const barHeight = 4;
+      const barX = enemy.x;
+      const barY = enemy.y - 8;
+
+      // Background
+      ctx.fillStyle = '#333';
+      ctx.fillRect(barX, barY, barWidth, barHeight);
+
+      // HP bar
+      ctx.fillStyle = '#ff0000';
+      const hpRatio = enemy.hp / enemy.maxHp;
+      ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
+    }
   }
 }
 
