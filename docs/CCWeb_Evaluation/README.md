@@ -110,3 +110,21 @@ Nie wiadomo jak działa na Androidzie
 ### 7. CLI Teleport (?)
 (?) Teleport do CLI
 - Niejasna funkcjonalność lub brak możliwości przełączenia się do CLI mid-session
+
+### 8. Session Freezing Issues
+(-) Sesja się czasem zacina -- claude miał mieli retry connection i nic.
+- Sesja przestaje odpowiadać
+- Próby retry connection nie pomagają
+- Wymaga restart sesji
+
+### 9. False Rate Limit Messages
+(-) Durny i nieprawdziwy komunikat o rate limit.
+- Wyświetlają się błędne komunikaty o przekroczeniu limitu
+- Wprowadza w błąd użytkownika
+- Nie odzwierciedla rzeczywistego stanu
+
+### 10. Session Stop Delay
+(-) Jak się niechcący zacznie sesję to by zatrzymać trzeba czekać z 10 sekund.
+- Długi czas oczekiwania na zatrzymanie sesji
+- Brak natychmiastowego cancel
+- Frustrujące przy przypadkowym starcie
