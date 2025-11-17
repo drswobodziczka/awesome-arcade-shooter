@@ -218,8 +218,9 @@ function update() {
 
         // Remove enemy if HP depleted
         if (enemy.hp <= 0) {
+          const points = getEnemyProperties(enemy.type).points;
           game.enemies.splice(i, 1);
-          game.score += 10;
+          game.score += points;
           updateScore();
         }
         return false; // bullet is consumed

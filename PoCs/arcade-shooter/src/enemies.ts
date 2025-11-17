@@ -24,6 +24,7 @@ export interface EnemyProperties {
   shootInterval: number;
   canShoot: boolean;
   hp: number;
+  points: number;
 }
 
 // Get properties for enemy type
@@ -38,6 +39,7 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         shootInterval: 1000,
         canShoot: true,
         hp: 1,
+        points: 10,
       };
 
     case EnemyType.YELLOW:
@@ -49,6 +51,7 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         shootInterval: 1500,
         canShoot: true,
         hp: 1,
+        points: 20,
       };
 
     case EnemyType.PURPLE:
@@ -60,6 +63,7 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         shootInterval: 0,
         canShoot: false,
         hp: 1,
+        points: 25,
       };
 
     case EnemyType.TANK:
@@ -71,6 +75,7 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         shootInterval: 2000,
         canShoot: true,
         hp: 5,
+        points: 50,
       };
   }
 }
