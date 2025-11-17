@@ -45,4 +45,3 @@ Every file, interface, and function documented with JSDoc. Key modules:
 - `enemies.ts` - 4 enemy types with behaviors and unlock system
 - `spawning.ts` - Time-based spawn intervals
 - `rendering.ts` - Canvas 2D drawing
-- `main.ts` - Game loop, input, state management
