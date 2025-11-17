@@ -142,3 +142,10 @@ Nie wiadomo jak działa na Androidzie
 - Brak możliwości cofnięcia się do wcześniejszego stanu rozmowy
 - Nie można wrócić do poprzednich punktów w konwersacji
 - Brak undo/rollback functionality
+
+### 12. Model & Repository Selection Not Persisted
+(-) Zawsze zostaje model i repo ostatniego wyboru. Wolałbym żeby interfejs pamiętał wybory między konwersacjami i oknami CC Web
+- Brak zapamiętywania preferencji modelu między sesjami
+- Brak zapamiętywania wybranego repo między oknami
+- Wymaga ręcznego resetowania wyboru za każdym razem
+- Uciążliwe przy pracy z wieloma projektami/modelami
