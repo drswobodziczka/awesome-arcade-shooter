@@ -128,3 +128,9 @@ Nie wiadomo jak działa na Androidzie
 - Długi czas oczekiwania na zatrzymanie sesji
 - Brak natychmiastowego cancel
 - Frustrujące przy przypadkowym starcie
+
+### 11. No Conversation History Navigation
+(-) Nie ma opcji back in time w konwersacji.
+- Brak możliwości cofnięcia się do wcześniejszego stanu rozmowy
+- Nie można wrócić do poprzednich punktów w konwersacji
+- Brak undo/rollback functionality
