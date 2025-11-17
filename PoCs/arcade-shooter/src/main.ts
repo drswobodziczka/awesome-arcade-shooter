@@ -1,38 +1,71 @@
+/**
+ * @file main.ts
+ * @description Main game loop and state management.
+ * Entry point for the arcade shooter - handles initialization, input, update, and render cycles.
+ * Uses requestAnimationFrame for 60 FPS game loop.
+ */
+
 import { GameObject, checkCollision } from './utils';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties } from './enemies';
 import { spawnEnemies, SpawnTimers } from './spawning';
 import { Bullet, draw as renderGame, drawGameOver as renderGameOver } from './rendering';
 
-// Game configuration
+/**
+ * Global game configuration constants.
+ * Defines canvas size, player properties, and spawn rates.
+ */
 const CONFIG = {
+  /** Canvas width in pixels */
   CANVAS_WIDTH: 400,
+  /** Canvas height in pixels */
   CANVAS_HEIGHT: 600,
+  /** Player movement speed in pixels per frame */
   PLAYER_SPEED: 5,
+  /** Player triangle size (width and height) in pixels */
   PLAYER_SIZE: 30,
+  /** Minimum time between player shots in milliseconds */
   PLAYER_SHOOT_INTERVAL: 200,
+  /** Player bullet speed in pixels per frame (negative = upward) */
   BULLET_SPEED: 7,
+  /** Bullet width in pixels */
   BULLET_SIZE: 5,
+  /** STANDARD enemy spawn interval in milliseconds */
   STANDARD_ENEMY_SPAWN_INTERVAL: 1000,
+  /** Special enemy (YELLOW/PURPLE/TANK) spawn interval in milliseconds */
   SPECIAL_ENEMY_SPAWN_INTERVAL: 4500, // ~4.5x slower for special types
+  /** Multiplier for enemy bullet speed (0.7 = 70% of player bullet speed) */
   ENEMY_BULLET_SPEED_MULT: 0.7,
 };
 
-// Game state
+/**
+ * Global game state object.
+ * Contains all mutable game state including entities, timers, and input.
+ */
 const game = {
+  /** Canvas DOM element reference */
   canvas: document.getElementById('gameCanvas') as HTMLCanvasElement,
+  /** 2D rendering context (null until init) */
   ctx: null as CanvasRenderingContext2D | null,
+  /** Current score (10 points per enemy killed) */
   score: 0,
+  /** Game over flag - when true, game loop stops and overlay shows */
   gameOver: false,
+  /** Game start timestamp in milliseconds (for calculating gameTime) */
   gameStartTime: 0,
+  /** Player object (spawns at bottom-center) */
   player: {
     x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.PLAYER_SIZE / 2,
     y: CONFIG.CANVAS_HEIGHT - CONFIG.PLAYER_SIZE - 20,
     width: CONFIG.PLAYER_SIZE,
     height: CONFIG.PLAYER_SIZE,
   },
+  /** Array of active player bullets */
   bullets: [] as Bullet[],
+  /** Array of active enemies */
   enemies: [] as Enemy[],
+  /** Array of active enemy bullets */
   enemyBullets: [] as Bullet[],
+  /** Keyboard input state (true = key currently pressed) */
   keys: {
     left: false,
     right: false,
@@ -40,16 +73,23 @@ const game = {
     down: false,
     space: false,
   },
+  /** Enemy spawn timers (last spawn timestamp for each type) */
   spawnTimers: {
     lastStandardSpawn: 0,
     lastYellowSpawn: 0,
     lastPurpleSpawn: 0,
     lastTankSpawn: 0,
   } as SpawnTimers,
+  /** Last player shot timestamp for fire rate limiting */
   lastPlayerShot: 0,
 };
 
-// Keyboard handler
+/**
+ * Maps keyboard codes to game.keys state properties.
+ *
+ * @param code - Keyboard event code (e.g., "ArrowLeft", "Space")
+ * @param pressed - true on keydown, false on keyup
+ */
 function handleKey(code: string, pressed: boolean) {
   if (code === 'ArrowLeft') game.keys.left = pressed;
   else if (code === 'ArrowRight') game.keys.right = pressed;
@@ -58,7 +98,10 @@ function handleKey(code: string, pressed: boolean) {
   else if (code === 'Space') game.keys.space = pressed;
 }
 
-// Initialize game
+/**
+ * Initializes the game on page load.
+ * Sets up canvas context, registers keyboard listeners, and starts the game loop.
+ */
 function init() {
   game.ctx = game.canvas.getContext('2d');
   if (!game.ctx) throw new Error('Failed to get canvas context');
@@ -85,7 +128,11 @@ function init() {
   gameLoop();
 }
 
-// Main game loop
+/**
+ * Main game loop using requestAnimationFrame for 60 FPS.
+ * Exits to game over screen when game.gameOver is true.
+ * Otherwise calls update() and render() each frame.
+ */
 function gameLoop() {
   if (game.gameOver) {
     renderGameOver(game.ctx!, game.score, {
@@ -100,7 +147,13 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Create bullet centered on object
+/**
+ * Factory function to create a bullet centered on a game object.
+ *
+ * @param obj - The object firing the bullet (player or enemy)
+ * @param speed - Vertical velocity (negative for upward, positive for downward)
+ * @returns Bullet positioned at obj's horizontal center
+ */
 function createBullet(obj: GameObject, speed: number): Bullet {
   return {
     x: obj.x + obj.width / 2 - CONFIG.BULLET_SIZE / 2,
@@ -111,7 +164,11 @@ function createBullet(obj: GameObject, speed: number): Bullet {
   };
 }
 
-// Update game state
+/**
+ * Main game state update function called every frame.
+ * Handles player movement, shooting, enemy spawning, bullet movement,
+ * enemy AI, collision detection, and game over conditions.
+ */
 function update() {
   const now = Date.now();
 
@@ -244,7 +301,10 @@ function update() {
   }
 }
 
-// Render game
+/**
+ * Calls the rendering module to draw the current frame.
+ * Wrapper around renderGame() from rendering.ts.
+ */
 function render() {
   renderGame(
     game.ctx!,
@@ -259,7 +319,10 @@ function render() {
   );
 }
 
-// Update score display
+/**
+ * Updates the DOM score display element.
+ * Called whenever an enemy is destroyed.
+ */
 function updateScore() {
   const scoreEl = document.getElementById('score');
   if (scoreEl) scoreEl.textContent = `Score: ${game.score}`;

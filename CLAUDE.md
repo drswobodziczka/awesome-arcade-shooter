@@ -22,3 +22,27 @@ Classic arcade-style shooter game.
 - Start simple, iterate
 - Test early and often
 - Keep code modular
+
+---
+
+## Documentation References
+
+### Tech Stack Justification
+**Location:** `docs/tech-stack-justification.md`
+
+Why TypeScript + HTML5 Canvas + Vite chosen for this game. Covers zero-dependency approach, bundle size, performance targets, and migration triggers.
+
+### Game Mechanics Reference
+**Location:** `docs/game-mechanics.md`
+
+Current gameplay balance: player stats, 4 enemy types, spawn rates, difficulty progression, scoring, collision system.
+
+### Code Documentation
+**Location:** All source files in `PoCs/arcade-shooter/src/`
+
+Every file, interface, and function documented with JSDoc. Key modules:
+- `utils.ts` - AABB collision detection
+- `enemies.ts` - 4 enemy types with behaviors and unlock system
+- `spawning.ts` - Time-based spawn intervals
+- `rendering.ts` - Canvas 2D drawing
+- `main.ts` - Game loop, input, state management

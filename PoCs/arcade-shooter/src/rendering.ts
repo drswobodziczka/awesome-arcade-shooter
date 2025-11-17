@@ -1,17 +1,41 @@
+/**
+ * @file rendering.ts
+ * @description Canvas 2D rendering system for all game visuals.
+ * Handles drawing player, enemies, bullets, HP bars, and game over screen.
+ */
+
 import { GameObject } from './utils';
 import { Enemy, EnemyType, getEnemyProperties } from './enemies';
 
+/**
+ * Bullet game object with velocity properties.
+ * Extends GameObject with directional movement.
+ */
 export interface Bullet extends GameObject {
+  /** Vertical velocity in pixels per frame (negative = upward, positive = downward) */
   vy: number;
+  /** Optional horizontal velocity for diagonal shots (e.g., YELLOW enemy triple-spread) */
   vx?: number;
 }
 
+/**
+ * Canvas dimensions for rendering bounds.
+ */
 export interface RenderConfig {
+  /** Canvas width in pixels */
   canvasWidth: number;
+  /** Canvas height in pixels */
   canvasHeight: number;
 }
 
-// Draw triangle shape
+/**
+ * Draws a triangle shape on the canvas.
+ * Used for player (points up) and enemies (point down).
+ *
+ * @param ctx - Canvas 2D rendering context
+ * @param obj - Game object with position and dimensions
+ * @param pointUp - true for upward-pointing triangle (player), false for downward (enemies)
+ */
 export function drawTriangle(
   ctx: CanvasRenderingContext2D,
   obj: GameObject,
@@ -31,7 +55,13 @@ export function drawTriangle(
   ctx.fill();
 }
 
-// Draw bullets
+/**
+ * Renders all bullets of a specific type (player or enemy).
+ *
+ * @param ctx - Canvas 2D rendering context
+ * @param bullets - Array of bullets to render
+ * @param color - CSS color string for bullet fill (green for player, orange for enemies)
+ */
 export function drawBullets(
   ctx: CanvasRenderingContext2D,
   bullets: Bullet[],
@@ -43,7 +73,22 @@ export function drawBullets(
   }
 }
 
-// Draw main game scene
+/**
+ * Main rendering function that draws the entire game scene.
+ *
+ * Render order (back to front):
+ * 1. Background (dark blue)
+ * 2. Player (cyan triangle pointing up)
+ * 3. Bullets (green for player, orange for enemies)
+ * 4. Enemies (colored triangles pointing down, with HP bars for TANKs)
+ *
+ * @param ctx - Canvas 2D rendering context
+ * @param player - Player game object
+ * @param enemies - Array of all active enemies
+ * @param bullets - Array of player bullets
+ * @param enemyBullets - Array of enemy bullets
+ * @param config - Canvas dimensions for clearing
+ */
 export function draw(
   ctx: CanvasRenderingContext2D,
   player: GameObject,
@@ -89,7 +134,19 @@ export function draw(
   }
 }
 
-// Draw game over screen
+/**
+ * Renders the game over overlay with final score and restart prompt.
+ *
+ * Layout:
+ * - Semi-transparent black overlay
+ * - "GAME OVER" in large red text
+ * - Final score in white
+ * - Restart instruction ("Press Enter to restart")
+ *
+ * @param ctx - Canvas 2D rendering context
+ * @param score - Final score to display
+ * @param config - Canvas dimensions for centering text
+ */
 export function drawGameOver(
   ctx: CanvasRenderingContext2D,
   score: number,
