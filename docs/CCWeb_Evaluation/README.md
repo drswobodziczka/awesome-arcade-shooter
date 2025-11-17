@@ -13,6 +13,11 @@
 - Seamless workflow między web interface a GitHub Actions
 - Współpraca CC Web + automated workflows zwiększa produktywność
 
+### 3. Teleport to CLI Feature
+(?) Możliwość przeniesienia sesji z Web do lokalnego CLI
+- Transfer kontekstu i zmian z przeglądarki do lokalnego środowiska
+- Wymaga dalszego przetestowania w praktyce
+
 ## Limitations & Issues
 
 ### 1. No GitHub CLI Access
@@ -28,3 +33,12 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego kopiowania errorów lub manual intervention
 
 **Impact:** Workflow "build failed" → użytkownik musi ręcznie podać logi lub opisać problem.
+
+### 3. No MCP Server Configuration
+(-!) Brak możliwości konfiguracji MCP servers i dodatkowych narzędzi
+- Wersja web nie wspiera MCP (Model Context Protocol)
+- Brak możliwości rozszerzenia o custom tools/integrations
+- Tylko CLI/Desktop mają pełne wsparcie MCP (200+ dostępnych serwerów)
+- Ogranicza możliwości integracji z external data sources (GitHub API, databases, etc.)
+
+**Impact:** Web version ma tylko wbudowane narzędzia; brak dostępu do ekosystemu MCP.
