@@ -20,7 +20,7 @@ const CONFIG = {
   /** Canvas height in pixels */
   CANVAS_HEIGHT: 900,
   /** Global game speed multiplier (< 1 to slow down, > 1 to speed up) */
-  GAME_SPEED: 0.7,
+  GAME_SPEED: 0.5,
   /** Player movement speed in pixels per frame */
   PLAYER_SPEED: 5,
   /** Player triangle size (width and height) in pixels */
