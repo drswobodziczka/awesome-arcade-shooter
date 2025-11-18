@@ -82,6 +82,7 @@ export function draw(
       const radius = enemy.width / 2;
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
       ctx.fill();
+      console.log('Rendering TELEPORT at:', enemy.x, enemy.y, 'radius:', radius, 'color:', colors[colorIndex]);
     } else {
       // Normal triangle rendering for other enemies
       ctx.fillStyle = props.color;

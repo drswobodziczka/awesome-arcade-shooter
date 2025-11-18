@@ -70,7 +70,9 @@ export function spawnEnemies(
   ) {
     const props = getEnemyProperties(EnemyType.TELEPORT);
     const x = Math.random() * (config.canvasWidth - props.size);
-    enemies.push(createEnemy(EnemyType.TELEPORT, x, -props.size, now));
+    const teleportEnemy = createEnemy(EnemyType.TELEPORT, x, -props.size, now);
+    console.log('TELEPORT enemy spawned:', teleportEnemy);
+    enemies.push(teleportEnemy);
     timers.lastTeleportSpawn = now;
   }
 }
