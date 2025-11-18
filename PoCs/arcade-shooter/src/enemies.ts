@@ -168,21 +168,23 @@ export function createEnemy(
  * @param playerY - Current player Y position (unused currently)
  * @param playerWidth - Player width for centering calculations
  * @param canvasWidth - Canvas width for boundary checks
+ * @param gameSpeed - Global game speed multiplier (< 1 to slow down, > 1 to speed up)
  */
 export function updateEnemyMovement(
   enemy: Enemy,
   playerX: number,
   playerY: number,
   playerWidth: number,
-  canvasWidth: number
+  canvasWidth: number,
+  gameSpeed: number
 ): void {
   const props = getEnemyProperties(enemy.type);
 
   switch (enemy.type) {
     case EnemyType.STANDARD:
       // Move down and bounce horizontally
-      enemy.y += enemy.vy;
-      enemy.x += enemy.vx;
+      enemy.y += enemy.vy * gameSpeed;
+      enemy.x += enemy.vx * gameSpeed;
 
       if (enemy.x <= 0 || enemy.x >= canvasWidth - enemy.width) {
         enemy.vx = -enemy.vx;
@@ -192,8 +194,8 @@ export function updateEnemyMovement(
 
     case EnemyType.YELLOW:
       // Can move backward (up) sometimes
-      enemy.y += enemy.vy;
-      enemy.x += enemy.vx;
+      enemy.y += enemy.vy * gameSpeed;
+      enemy.x += enemy.vx * gameSpeed;
 
       // Randomly reverse vertical direction, but not if too far up
       if (Math.random() < 0.01 && enemy.y > 50) {
@@ -219,13 +221,13 @@ export function updateEnemyMovement(
 
       // Move toward player horizontally
       if (centerX < targetX - 5) {
-        enemy.x += props.horizontalSpeed;
+        enemy.x += props.horizontalSpeed * gameSpeed;
       } else if (centerX > targetX + 5) {
-        enemy.x -= props.horizontalSpeed;
+        enemy.x -= props.horizontalSpeed * gameSpeed;
       }
 
       // Move down
-      enemy.y += props.speed;
+      enemy.y += props.speed * gameSpeed;
 
       // Keep in bounds
       enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
@@ -233,8 +235,8 @@ export function updateEnemyMovement(
 
     case EnemyType.TANK:
       // Slow, steady movement
-      enemy.y += enemy.vy;
-      enemy.x += enemy.vx;
+      enemy.y += enemy.vy * gameSpeed;
+      enemy.x += enemy.vx * gameSpeed;
 
       if (enemy.x <= 0 || enemy.x >= canvasWidth - enemy.width) {
         enemy.vx = -enemy.vx;
