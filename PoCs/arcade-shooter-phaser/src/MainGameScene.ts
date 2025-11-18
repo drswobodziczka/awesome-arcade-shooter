@@ -5,6 +5,8 @@
  */
 
 import Phaser from 'phaser';
+import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties, createEnemy } from './enemies';
+import { spawnEnemies, SpawnTimers } from './spawning';
 
 /**
  * Game configuration constants.
@@ -16,6 +18,9 @@ const CONFIG = {
   SHOOT_INTERVAL: 200,
   BULLET_SPEED: 7,
   BULLET_SIZE: 5,
+  ENEMY_BULLET_SPEED_MULT: 0.7,
+  STANDARD_ENEMY_SPAWN_INTERVAL: 1000,
+  SPECIAL_ENEMY_SPAWN_INTERVAL: 4500,
 };
 
 /**
@@ -35,6 +40,19 @@ export class MainGameScene extends Phaser.Scene {
   private lastPlayerShot: number = 0;
   /** Player bullets group */
   private bullets?: Phaser.Physics.Arcade.Group;
+  /** Enemy game objects with visual sprites */
+  private enemies: Array<Enemy & { sprite: Phaser.GameObjects.Triangle }> = [];
+  /** Enemy bullets group */
+  private enemyBullets: Phaser.GameObjects.Rectangle[] = [];
+  /** Enemy spawn timers */
+  private spawnTimers: SpawnTimers = {
+    lastStandardSpawn: 0,
+    lastYellowSpawn: 0,
+    lastPurpleSpawn: 0,
+    lastTankSpawn: 0,
+  };
+  /** Game start timestamp */
+  private gameStartTime: number = 0;
 
   constructor() {
     super({ key: 'MainGameScene' });
@@ -53,6 +71,9 @@ export class MainGameScene extends Phaser.Scene {
    * Called after preload() - create game objects.
    */
   create(): void {
+    // Initialize game start time
+    this.gameStartTime = Date.now();
+
     // Background color
     this.cameras.main.setBackgroundColor('#16213e');
 
@@ -104,6 +125,9 @@ export class MainGameScene extends Phaser.Scene {
   update(): void {
     if (!this.player || !this.cursors || !this.bullets) return;
 
+    const now = Date.now();
+    const gameTime = now - this.gameStartTime;
+
     // Player movement
     const playerSpeed = CONFIG.PLAYER_SPEED * CONFIG.GAME_SPEED;
 
@@ -121,19 +145,89 @@ export class MainGameScene extends Phaser.Scene {
     }
 
     // Player shooting
-    const now = Date.now();
     if (this.cursors.space.isDown && now - this.lastPlayerShot > CONFIG.SHOOT_INTERVAL) {
       this.shootBullet();
       this.lastPlayerShot = now;
     }
 
-    // Update bullets (move upward, destroy if off-screen)
+    // Spawn enemies
+    const tempEnemies: Enemy[] = this.enemies;
+    spawnEnemies(tempEnemies, this.spawnTimers, gameTime, now, {
+      canvasWidth: this.scale.width,
+      standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
+      specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
+    });
+
+    // Create sprites for newly spawned enemies
+    for (let i = this.enemies.length; i < tempEnemies.length; i++) {
+      const enemy = tempEnemies[i];
+      const props = getEnemyProperties(enemy.type);
+      const sprite = this.add.triangle(
+        enemy.x,
+        enemy.y,
+        0, enemy.height,                    // bottom point
+        -enemy.width/2, 0,                  // top-left
+        enemy.width/2, 0,                   // top-right
+        parseInt(props.color.replace('#', ''), 16)
+      );
+      this.enemies.push({ ...enemy, sprite });
+    }
+
+    // Update enemy movement and shooting
+    this.enemies = this.enemies.filter((enemy) => {
+      // Update movement
+      updateEnemyMovement(
+        enemy,
+        this.player!.x,
+        this.player!.y,
+        CONFIG.PLAYER_SIZE,
+        this.scale.width,
+        CONFIG.GAME_SPEED
+      );
+
+      // Update sprite position
+      enemy.sprite.setPosition(enemy.x, enemy.y);
+
+      // Enemy shooting
+      const props = getEnemyProperties(enemy.type);
+      if (props.canShoot && now - enemy.lastShot > props.shootInterval) {
+        this.shootEnemyBullet(enemy);
+        enemy.lastShot = now;
+      }
+
+      // Remove off-screen enemies
+      if (enemy.y > this.scale.height + enemy.height) {
+        enemy.sprite.destroy();
+        return false;
+      }
+      return true;
+    });
+
+    // Update player bullets (move upward, destroy if off-screen)
     this.bullets.children.entries.forEach((bullet) => {
       const rect = bullet as Phaser.GameObjects.Rectangle;
       rect.y -= CONFIG.BULLET_SPEED * CONFIG.GAME_SPEED;
       if (rect.y < -rect.height) {
         rect.destroy();
       }
+    });
+
+    // Update enemy bullets (move downward, destroy if off-screen)
+    this.enemyBullets = this.enemyBullets.filter((bullet) => {
+      bullet.y += bullet.getData('vy');
+      const vx = bullet.getData('vx');
+      if (vx !== undefined) {
+        bullet.x += vx;
+      }
+
+      const inBounds = bullet.y < this.scale.height + bullet.height &&
+                       bullet.x > -bullet.width &&
+                       bullet.x < this.scale.width + bullet.width;
+
+      if (!inBounds) {
+        bullet.destroy();
+      }
+      return inBounds;
     });
   }
 
@@ -151,6 +245,66 @@ export class MainGameScene extends Phaser.Scene {
       0x00ff00 // green
     );
     this.bullets?.add(bullet);
+  }
+
+  /**
+   * Creates enemy bullet(s) based on enemy type.
+   * YELLOW enemies shoot triple-spread, others shoot straight down.
+   */
+  private shootEnemyBullet(enemy: Enemy): void {
+    const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT * CONFIG.GAME_SPEED;
+
+    if (enemy.type === EnemyType.YELLOW) {
+      // Triple-spread shot
+      const centerX = enemy.x;
+      const bottomY = enemy.y + enemy.height;
+
+      // Left diagonal
+      const leftBullet = this.add.rectangle(
+        centerX - 15,
+        bottomY,
+        CONFIG.BULLET_SIZE,
+        CONFIG.BULLET_SIZE * 2,
+        0xff6b00 // orange
+      );
+      leftBullet.setData('vy', bulletSpeed);
+      leftBullet.setData('vx', -2 * CONFIG.GAME_SPEED);
+      this.enemyBullets.push(leftBullet);
+
+      // Center straight
+      const centerBullet = this.add.rectangle(
+        centerX,
+        bottomY,
+        CONFIG.BULLET_SIZE,
+        CONFIG.BULLET_SIZE * 2,
+        0xff6b00
+      );
+      centerBullet.setData('vy', bulletSpeed);
+      this.enemyBullets.push(centerBullet);
+
+      // Right diagonal
+      const rightBullet = this.add.rectangle(
+        centerX + 15,
+        bottomY,
+        CONFIG.BULLET_SIZE,
+        CONFIG.BULLET_SIZE * 2,
+        0xff6b00
+      );
+      rightBullet.setData('vy', bulletSpeed);
+      rightBullet.setData('vx', 2 * CONFIG.GAME_SPEED);
+      this.enemyBullets.push(rightBullet);
+    } else {
+      // Standard straight shot
+      const bullet = this.add.rectangle(
+        enemy.x,
+        enemy.y + enemy.height,
+        CONFIG.BULLET_SIZE,
+        CONFIG.BULLET_SIZE * 2,
+        0xff6b00
+      );
+      bullet.setData('vy', bulletSpeed);
+      this.enemyBullets.push(bullet);
+    }
   }
 
   /**
