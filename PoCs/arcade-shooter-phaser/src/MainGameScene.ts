@@ -55,6 +55,8 @@ export class MainGameScene extends Phaser.Scene {
   private gameStartTime: number = 0;
   /** Game over flag */
   private gameOver: boolean = false;
+  /** Audio buffers for synth sounds */
+  private audioBuffers: Map<string, AudioBuffer> = new Map();
 
   constructor() {
     super({ key: 'MainGameScene' });
@@ -264,7 +266,7 @@ export class MainGameScene extends Phaser.Scene {
           enemy.hp -= 1;
 
           // Play hit sound
-          this.sound.play('hit', { volume: 0.4 });
+          this.playSynthSound('hit', 0.4);
 
           // Flash effect on hit
           this.createHitFlash(enemy.sprite);
@@ -285,7 +287,7 @@ export class MainGameScene extends Phaser.Scene {
             this.createExplosion(enemy.sprite.x, enemy.sprite.y, enemy.type);
 
             // Play explosion sound
-            this.sound.play('explosion', { volume: 0.5 });
+            this.playSynthSound('explosion', 0.5);
 
             // Camera shake on explosion
             this.cameras.main.shake(200, 0.005);
@@ -331,7 +333,7 @@ export class MainGameScene extends Phaser.Scene {
     this.bullets?.add(bullet);
 
     // Play shoot sound
-    this.sound.play('shoot', { volume: 0.3 });
+    this.playSynthSound('shoot', 0.3);
   }
 
   /**
@@ -423,14 +425,6 @@ export class MainGameScene extends Phaser.Scene {
     const audioContext = this.sound.context;
     const sampleRate = audioContext.sampleRate;
 
-    // Helper to create and register audio buffer
-    const createSound = (key: string, buffer: AudioBuffer) => {
-      const audioCache = this.cache.audio;
-      if (!audioCache.has(key)) {
-        audioCache.add(key, buffer);
-      }
-    };
-
     // Shoot sound - short laser pew (0.1s)
     const shootBuffer = audioContext.createBuffer(1, sampleRate * 0.1, sampleRate);
     const shootData = shootBuffer.getChannelData(0);
@@ -439,7 +433,7 @@ export class MainGameScene extends Phaser.Scene {
       const freq = 800 - t * 4000; // Descending frequency
       shootData[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 20);
     }
-    createSound('shoot', shootBuffer);
+    this.audioBuffers.set('shoot', shootBuffer);
 
     // Hit sound - short blip (0.05s)
     const hitBuffer = audioContext.createBuffer(1, sampleRate * 0.05, sampleRate);
@@ -448,7 +442,7 @@ export class MainGameScene extends Phaser.Scene {
       const t = i / sampleRate;
       hitData[i] = Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 50);
     }
-    createSound('hit', hitBuffer);
+    this.audioBuffers.set('hit', hitBuffer);
 
     // Explosion sound - rumble (0.3s)
     const explBuffer = audioContext.createBuffer(1, sampleRate * 0.3, sampleRate);
@@ -459,7 +453,29 @@ export class MainGameScene extends Phaser.Scene {
       const freq = 200 - t * 400;
       explData[i] = (Math.sin(2 * Math.PI * freq * t) * 0.5 + noise * 0.5) * Math.exp(-t * 8);
     }
-    createSound('explosion', explBuffer);
+    this.audioBuffers.set('explosion', explBuffer);
+  }
+
+  /**
+   * Plays a synth sound using Web Audio API.
+   * @param key - Sound key ('shoot', 'hit', 'explosion')
+   * @param volume - Volume (0-1)
+   */
+  private playSynthSound(key: string, volume: number = 1.0): void {
+    const buffer = this.audioBuffers.get(key);
+    if (!buffer || !this.sound || !this.sound.context) return;
+
+    const audioContext = this.sound.context;
+    const source = audioContext.createBufferSource();
+    const gainNode = audioContext.createGain();
+
+    source.buffer = buffer;
+    gainNode.gain.value = volume;
+
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    source.start(0);
   }
 
   /**
