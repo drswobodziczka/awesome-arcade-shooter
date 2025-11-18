@@ -27,6 +27,59 @@
       font-size: 24px;
       margin: 10px 0;
     }
+    #testPanel {
+      background: #0f3460;
+      border: 2px solid #e94560;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      color: #fff;
+      max-width: 400px;
+    }
+    #testPanel h3 {
+      margin: 0 0 10px 0;
+      color: #e94560;
+      font-size: 18px;
+    }
+    .enemy-checkbox {
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+    }
+    .enemy-checkbox input {
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    .enemy-checkbox label {
+      cursor: pointer;
+    }
+    .mode-selector {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e94560;
+    }
+    .mode-selector label {
+      display: block;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    #startButton {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    #startButton:hover {
+      background: #d63851;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -35,6 +88,42 @@
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <div id="controls" style="color: #fff; margin-top: 10px;">
       Arrow keys: Move | Space: Shoot
+    </div>
+
+    <div id="testPanel">
+      <h3>Test Panel</h3>
+
+      <div class="mode-selector">
+        <label>
+          <input type="radio" name="gameMode" value="normal" checked>
+          Normal Mode (progressive spawning)
+        </label>
+        <label>
+          <input type="radio" name="gameMode" value="test">
+          Test Mode (spawn selected enemies immediately)
+        </label>
+      </div>
+
+      <div id="enemySelection" class="hidden">
+        <div class="enemy-checkbox">
+          <input type="checkbox" id="enemy-standard" value="STANDARD" checked>
+          <label for="enemy-standard">Standard (red, bouncing)</label>
+        </div>
+        <div class="enemy-checkbox">
+          <input type="checkbox" id="enemy-yellow" value="YELLOW">
+          <label for="enemy-yellow">Yellow (large, triple-shot)</label>
+        </div>
+        <div class="enemy-checkbox">
+          <input type="checkbox" id="enemy-purple" value="PURPLE">
+          <label for="enemy-purple">Purple (fast tracker)</label>
+        </div>
+        <div class="enemy-checkbox">
+          <input type="checkbox" id="enemy-tank" value="TANK">
+          <label for="enemy-tank">Tank (heavy, 5 HP)</label>
+        </div>
+      </div>
+
+      <button id="startButton">Start Game</button>
     </div>
   </div>
   <script type="module" src="/src/main.ts"></script>
