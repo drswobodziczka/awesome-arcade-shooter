@@ -73,6 +73,9 @@ export class MainGameScene extends Phaser.Scene {
     graphics.fillRect(0, 0, 4, 4);
     graphics.generateTexture('particle', 4, 4);
     graphics.clear();
+
+    // Generate audio using Web Audio API
+    this.generateAudioAssets();
   }
 
   /**
@@ -261,6 +264,9 @@ export class MainGameScene extends Phaser.Scene {
           // Damage enemy
           enemy.hp -= 1;
 
+          // Play hit sound
+          this.sound.play('hit', { volume: 0.4 });
+
           // Destroy bullet
           bullet.destroy();
 
@@ -272,6 +278,9 @@ export class MainGameScene extends Phaser.Scene {
 
             // Create explosion effect
             this.createExplosion(enemy.sprite.x, enemy.sprite.y, enemy.type);
+
+            // Play explosion sound
+            this.sound.play('explosion', { volume: 0.5 });
 
             enemy.sprite.destroy();
             this.enemies.splice(i, 1);
@@ -312,6 +321,9 @@ export class MainGameScene extends Phaser.Scene {
       0x00ff00 // green
     );
     this.bullets?.add(bullet);
+
+    // Play shoot sound
+    this.sound.play('shoot', { volume: 0.3 });
   }
 
   /**
@@ -391,6 +403,47 @@ export class MainGameScene extends Phaser.Scene {
    */
   getScore(): number {
     return this.score;
+  }
+
+  /**
+   * Generates synth audio assets using Web Audio API.
+   * Creates retro arcade-style sound effects for shoot, hit, and explosion.
+   */
+  private generateAudioAssets(): void {
+    if (!this.sound || !this.sound.context) return;
+
+    const audioContext = this.sound.context;
+    const sampleRate = audioContext.sampleRate;
+
+    // Shoot sound - short laser pew (0.1s)
+    const shootBuffer = audioContext.createBuffer(1, sampleRate * 0.1, sampleRate);
+    const shootData = shootBuffer.getChannelData(0);
+    for (let i = 0; i < shootData.length; i++) {
+      const t = i / sampleRate;
+      const freq = 800 - t * 4000; // Descending frequency
+      shootData[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 20);
+    }
+    (this.sound as any).decodeAudio('shoot', shootBuffer);
+
+    // Hit sound - short blip (0.05s)
+    const hitBuffer = audioContext.createBuffer(1, sampleRate * 0.05, sampleRate);
+    const hitData = hitBuffer.getChannelData(0);
+    for (let i = 0; i < hitData.length; i++) {
+      const t = i / sampleRate;
+      hitData[i] = Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 50);
+    }
+    (this.sound as any).decodeAudio('hit', hitBuffer);
+
+    // Explosion sound - rumble (0.3s)
+    const explBuffer = audioContext.createBuffer(1, sampleRate * 0.3, sampleRate);
+    const explData = explBuffer.getChannelData(0);
+    for (let i = 0; i < explData.length; i++) {
+      const t = i / sampleRate;
+      const noise = Math.random() * 2 - 1;
+      const freq = 200 - t * 400;
+      explData[i] = (Math.sin(2 * Math.PI * freq * t) * 0.5 + noise * 0.5) * Math.exp(-t * 8);
+    }
+    (this.sound as any).decodeAudio('explosion', explBuffer);
   }
 
   /**
