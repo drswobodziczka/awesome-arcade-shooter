@@ -42,6 +42,14 @@ Podoba się praca w CC Web w przeglądarce
 - Brak potrzeby instalacji lokalnej
 - Łatwe przełączanie między projektami w różnych tabach
 
+### 6. Vibe Coding with PR/Issue-Driven Development
+(+) Vibe coding pull requestami, issuesami, projektem i iteracjami zwiększa czas o trochę, ale generalnie daje większą kontrolę jakości i zgodności ze specyfikacją, utrzymuje HITL, oraz umożliwia CC Action na robienie review
+- Lepszą kontrolę nad jakością kodu poprzez PR reviews
+- Większą zgodność z wymaganiami i specyfikacją
+- Utrzymanie Human In The Loop - użytkownik ma przegląd każdego kroku
+- Umożliwia automatyczne review przez CC Action w GitHub Actions
+- Trade-off: nieco więcej czasu, ale wyższa pewność poprawności
+
 ## Limitations & Issues (-)
 
 ### 1. No File Mentions / Slash Commands
@@ -110,3 +118,34 @@ Nie wiadomo jak działa na Androidzie
 ### 7. CLI Teleport (?)
 (?) Teleport do CLI
 - Niejasna funkcjonalność lub brak możliwości przełączenia się do CLI mid-session
+
+### 8. Session Freezing Issues
+(-) Sesja się czasem zacina -- claude miał mieli retry connection i nic.
+- Sesja przestaje odpowiadać
+- Próby retry connection nie pomagają
+- Wymaga restart sesji
+
+### 9. False Rate Limit Messages
+(-) Durny i nieprawdziwy komunikat o rate limit.
+- Wyświetlają się błędne komunikaty o przekroczeniu limitu
+- Wprowadza w błąd użytkownika
+- Nie odzwierciedla rzeczywistego stanu
+
+### 10. Session Stop Delay
+(-) Jak się niechcący zacznie sesję to by zatrzymać trzeba czekać z 10 sekund.
+- Długi czas oczekiwania na zatrzymanie sesji
+- Brak natychmiastowego cancel
+- Frustrujące przy przypadkowym starcie
+
+### 11. No Conversation History Navigation
+(-) Nie ma opcji back in time w konwersacji.
+- Brak możliwości cofnięcia się do wcześniejszego stanu rozmowy
+- Nie można wrócić do poprzednich punktów w konwersacji
+- Brak undo/rollback functionality
+
+### 12. Model & Repository Selection Not Persisted
+(-) Zawsze zostaje model i repo ostatniego wyboru. Wolałbym żeby interfejs pamiętał wybory między konwersacjami i oknami CC Web
+- Brak zapamiętywania preferencji modelu między sesjami
+- Brak zapamiętywania wybranego repo między oknami
+- Wymaga ręcznego resetowania wyboru za każdym razem
+- Uciążliwe przy pracy z wieloma projektami/modelami
