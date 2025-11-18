@@ -173,17 +173,16 @@ export class MainGameScene extends Phaser.Scene {
       this.lastPlayerShot = now;
     }
 
-    // Spawn enemies
-    const tempEnemies: Enemy[] = this.enemies;
-    spawnEnemies(tempEnemies, this.spawnTimers, gameTime, now, {
+    // Spawn enemies into temporary array
+    const newEnemies: Enemy[] = [];
+    spawnEnemies(newEnemies, this.spawnTimers, gameTime, now, {
       canvasWidth: this.scale.width,
       standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
       specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
     });
 
     // Create sprites for newly spawned enemies
-    for (let i = this.enemies.length; i < tempEnemies.length; i++) {
-      const enemy = tempEnemies[i];
+    for (const enemy of newEnemies) {
       const props = getEnemyProperties(enemy.type);
       const sprite = this.add.triangle(
         enemy.x,
@@ -424,6 +423,14 @@ export class MainGameScene extends Phaser.Scene {
     const audioContext = this.sound.context;
     const sampleRate = audioContext.sampleRate;
 
+    // Helper to create and register audio buffer
+    const createSound = (key: string, buffer: AudioBuffer) => {
+      const audioCache = this.cache.audio;
+      if (!audioCache.has(key)) {
+        audioCache.add(key, buffer);
+      }
+    };
+
     // Shoot sound - short laser pew (0.1s)
     const shootBuffer = audioContext.createBuffer(1, sampleRate * 0.1, sampleRate);
     const shootData = shootBuffer.getChannelData(0);
@@ -432,7 +439,7 @@ export class MainGameScene extends Phaser.Scene {
       const freq = 800 - t * 4000; // Descending frequency
       shootData[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 20);
     }
-    (this.sound as any).decodeAudio('shoot', shootBuffer);
+    createSound('shoot', shootBuffer);
 
     // Hit sound - short blip (0.05s)
     const hitBuffer = audioContext.createBuffer(1, sampleRate * 0.05, sampleRate);
@@ -441,7 +448,7 @@ export class MainGameScene extends Phaser.Scene {
       const t = i / sampleRate;
       hitData[i] = Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 50);
     }
-    (this.sound as any).decodeAudio('hit', hitBuffer);
+    createSound('hit', hitBuffer);
 
     // Explosion sound - rumble (0.3s)
     const explBuffer = audioContext.createBuffer(1, sampleRate * 0.3, sampleRate);
@@ -452,7 +459,7 @@ export class MainGameScene extends Phaser.Scene {
       const freq = 200 - t * 400;
       explData[i] = (Math.sin(2 * Math.PI * freq * t) * 0.5 + noise * 0.5) * Math.exp(-t * 8);
     }
-    (this.sound as any).decodeAudio('explosion', explBuffer);
+    createSound('explosion', explBuffer);
   }
 
   /**
