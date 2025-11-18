@@ -55,6 +55,8 @@ export class MainGameScene extends Phaser.Scene {
   private gameStartTime: number = 0;
   /** Game over flag */
   private gameOver: boolean = false;
+  /** Game over screen shown flag */
+  private gameOverShown: boolean = false;
   /** Audio buffers for synth sounds */
   private audioBuffers: Map<string, AudioBuffer> = new Map();
 
@@ -146,7 +148,10 @@ export class MainGameScene extends Phaser.Scene {
 
     // Handle game over
     if (this.gameOver) {
-      this.showGameOver();
+      if (!this.gameOverShown) {
+        this.showGameOver();
+        this.gameOverShown = true;
+      }
       return;
     }
 
