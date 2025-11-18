@@ -137,6 +137,20 @@ function init() {
 }
 
 /**
+ * Displays an inline error message in the test panel.
+ *
+ * @param message - Error message to display
+ */
+function showTestPanelError(message: string) {
+  const testPanel = document.getElementById('testPanel')!;
+  const errorDiv = document.createElement('div');
+  errorDiv.id = 'testPanelError';
+  errorDiv.style.cssText = 'color: #ff6b6b; margin-top: 10px; font-size: 14px; font-weight: bold;';
+  errorDiv.textContent = message;
+  testPanel.appendChild(errorDiv);
+}
+
+/**
  * Sets up the test panel event handlers for mode selection and enemy checkboxes.
  */
 function setupTestPanel() {
@@ -157,19 +171,34 @@ function setupTestPanel() {
 
   // Start button handler
   startButton.addEventListener('click', () => {
+    // Clear any previous error messages
+    const existingError = document.getElementById('testPanelError');
+    if (existingError) existingError.remove();
+
     // Get selected mode
     const selectedMode = document.querySelector<HTMLInputElement>('input[name="gameMode"]:checked')!.value as 'normal' | 'test';
     game.gameMode = selectedMode;
 
     // If test mode, get selected enemies
     if (selectedMode === 'test') {
-      const checkedEnemies = Array.from(
+      const checkedBoxes = Array.from(
         document.querySelectorAll<HTMLInputElement>('#enemySelection input[type="checkbox"]:checked')
-      ).map((cb) => cb.value as EnemyType);
+      );
 
-      if (checkedEnemies.length === 0) {
-        alert('Please select at least one enemy type for test mode!');
+      if (checkedBoxes.length === 0) {
+        showTestPanelError('Please select at least one enemy type for test mode!');
         return;
+      }
+
+      // Validate and map checkbox values to EnemyType enum
+      const checkedEnemies: EnemyType[] = [];
+      for (const cb of checkedBoxes) {
+        const value = cb.value;
+        if (!Object.values(EnemyType).includes(value as EnemyType)) {
+          showTestPanelError(`Invalid enemy type: ${value}`);
+          return;
+        }
+        checkedEnemies.push(value as EnemyType);
       }
 
       game.testConfig.enabledEnemies = checkedEnemies;
@@ -189,6 +218,14 @@ function setupTestPanel() {
 function startGame() {
   game.started = true;
   game.gameStartTime = Date.now();
+
+  // Enable canvas and update controls text
+  game.canvas.classList.remove('disabled');
+  const controlsEl = document.getElementById('controls');
+  if (controlsEl) {
+    controlsEl.style.opacity = '1';
+    controlsEl.innerHTML = 'Arrow keys: Move | Space: Shoot';
+  }
 
   // Reset spawn timers
   game.spawnTimers.lastStandardSpawn = 0;

@@ -21,6 +21,11 @@
     canvas {
       border: 2px solid #0f3460;
       background: #16213e;
+      transition: opacity 0.3s;
+    }
+    canvas.disabled {
+      opacity: 0.3;
+      pointer-events: none;
     }
     #score {
       color: #e94560;
@@ -85,9 +90,9 @@
 <body>
   <div id="gameContainer">
     <div id="score">Score: 0</div>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <div id="controls" style="color: #fff; margin-top: 10px;">
-      Arrow keys: Move | Space: Shoot
+    <canvas id="gameCanvas" class="disabled" width="400" height="600"></canvas>
+    <div id="controls" style="color: #fff; margin-top: 10px; opacity: 0.5;">
+      Arrow keys: Move | Space: Shoot | <span style="color: #e94560;">Configure game below to start</span>
     </div>
 
     <div id="testPanel">
