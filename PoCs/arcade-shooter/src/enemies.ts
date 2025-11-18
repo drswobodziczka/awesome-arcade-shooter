@@ -47,6 +47,10 @@ export interface Enemy extends GameObject {
  * Defines all visual and behavioral characteristics.
  */
 export interface EnemyProperties {
+  /** Display name for UI */
+  name: string;
+  /** Short description for UI */
+  description: string;
   /** Enemy size in pixels (square bounding box) */
   size: number;
   /** Vertical movement speed in pixels per frame */
@@ -74,6 +78,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
   switch (type) {
     case EnemyType.STANDARD:
       return {
+        name: 'Standard',
+        description: 'red, bouncing',
         size: 30,
         speed: 2,
         horizontalSpeed: 2,
@@ -86,6 +92,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
 
     case EnemyType.YELLOW:
       return {
+        name: 'Yellow',
+        description: 'large, triple-shot',
         size: 60, // 2x bigger
         speed: 1.5,
         horizontalSpeed: 2,
@@ -98,6 +106,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
 
     case EnemyType.PURPLE:
       return {
+        name: 'Purple',
+        description: 'fast tracker',
         size: 15, // small sneaky
         speed: 3,
         horizontalSpeed: 4,
@@ -110,6 +120,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
 
     case EnemyType.TANK:
       return {
+        name: 'Tank',
+        description: 'heavy, 5 HP',
         size: 90, // 3x bigger
         speed: 0.8,
         horizontalSpeed: 1,

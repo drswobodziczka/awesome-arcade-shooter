@@ -169,6 +169,28 @@ function setupTestPanel() {
   const enemySelection = document.getElementById('enemySelection')!;
   const startButton = document.getElementById('startButton')!;
 
+  // Dynamically generate enemy checkboxes from EnemyType enum
+  Object.values(EnemyType).forEach((enemyType, index) => {
+    const props = getEnemyProperties(enemyType);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'enemy-checkbox';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `enemy-${enemyType.toLowerCase()}`;
+    checkbox.value = enemyType;
+    checkbox.checked = index === 0; // Check first enemy by default
+
+    const label = document.createElement('label');
+    label.htmlFor = checkbox.id;
+    label.textContent = `${props.name} (${props.description})`;
+
+    wrapper.appendChild(checkbox);
+    wrapper.appendChild(label);
+    enemySelection.appendChild(wrapper);
+  });
+
   // Show/hide enemy selection based on mode
   modeRadios.forEach((radio) => {
     radio.addEventListener('change', () => {
