@@ -134,6 +134,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
 
     case EnemyType.TELEPORT:
       return {
+        name: 'Teleport',
+        description: 'teleporting, homing shots',
         size: 25, // slightly smaller than player
         speed: 0.3, // very slow between teleports
         horizontalSpeed: 0,
@@ -141,6 +143,7 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         shootInterval: 1500,
         canShoot: true,
         hp: 1,
+        points: 30,
       };
   }
 }
@@ -209,8 +212,8 @@ export function updateEnemyMovement(
   playerWidth: number,
   canvasWidth: number,
   canvasHeight: number,
-  now?: number,
-  gameSpeed: number
+  gameSpeed: number,
+  now?: number
 ): void {
   const props = getEnemyProperties(enemy.type);
 

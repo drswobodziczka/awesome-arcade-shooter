@@ -100,6 +100,7 @@ describe('Test Mode Spawning', () => {
       lastYellowSpawn: 0,
       lastPurpleSpawn: 0,
       lastTankSpawn: 0,
+      lastTeleportSpawn: 0,
     };
     testConfig = {
       canvasWidth: 400,
