@@ -112,24 +112,42 @@ export function draw(
   // Draw enemies
   for (const enemy of enemies) {
     const props = getEnemyProperties(enemy.type);
-    ctx.fillStyle = props.color;
-    drawTriangle(ctx, enemy, false);
 
-    // Draw HP bar for TANK enemies
-    if (enemy.type === EnemyType.TANK) {
-      const barWidth = enemy.width;
-      const barHeight = 4;
-      const barX = enemy.x;
-      const barY = enemy.y - 8;
+    // Special rendering for TELEPORT enemy
+    if (enemy.type === EnemyType.TELEPORT) {
+      // Cycle through colors based on time
+      const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ff00aa', '#00ff88'];
+      const colorIndex = Math.floor(Date.now() / 300) % colors.length;
+      ctx.fillStyle = colors[colorIndex];
 
-      // Background
-      ctx.fillStyle = '#333';
-      ctx.fillRect(barX, barY, barWidth, barHeight);
+      // Draw circle
+      ctx.beginPath();
+      const centerX = enemy.x + enemy.width / 2;
+      const centerY = enemy.y + enemy.height / 2;
+      const radius = enemy.width / 2;
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // Normal triangle rendering for other enemies
+      ctx.fillStyle = props.color;
+      drawTriangle(ctx, enemy, false);
 
-      // HP bar
-      const hpRatio = enemy.hp / enemy.maxHp;
-      ctx.fillStyle = hpRatio > 0.5 ? '#2ecc71' : hpRatio > 0.25 ? '#f39c12' : '#e74c3c';
-      ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
+      // Draw HP bar for TANK enemies
+      if (enemy.type === EnemyType.TANK) {
+        const barWidth = enemy.width;
+        const barHeight = 4;
+        const barX = enemy.x;
+        const barY = enemy.y - 8;
+
+        // Background
+        ctx.fillStyle = '#333';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        // HP bar
+        const hpRatio = enemy.hp / enemy.maxHp;
+        ctx.fillStyle = hpRatio > 0.5 ? '#2ecc71' : hpRatio > 0.25 ? '#f39c12' : '#e74c3c';
+        ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
+      }
     }
   }
 }
