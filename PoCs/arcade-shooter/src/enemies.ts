@@ -65,6 +65,17 @@ export interface EnemyProperties {
 }
 
 /**
+ * Enemy metadata for introduction screen.
+ * Contains display name and narrative description.
+ */
+export interface EnemyMetadata {
+  /** Display name shown in introduction modal */
+  name: string;
+  /** Narrative description of enemy characteristics and threat level */
+  description: string;
+}
+
+/**
  * Retrieves the configuration properties for a specific enemy type.
  *
  * @param type - The enemy type to get properties for
@@ -129,6 +140,7 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         shootInterval: 1500,
         canShoot: true,
         hp: 1,
+        points: 30,
       };
   }
 }
@@ -340,4 +352,44 @@ export function getAvailableEnemyTypes(gameTime: number): EnemyType[] {
   }
 
   return types;
+}
+
+/**
+ * Retrieves narrative metadata for enemy introduction screen.
+ *
+ * @param type - The enemy type to get metadata for
+ * @returns Enemy metadata with name and description
+ */
+export function getEnemyMetadata(type: EnemyType): EnemyMetadata {
+  switch (type) {
+    case EnemyType.STANDARD:
+      return {
+        name: 'Zwiadowca',
+        description: 'Podstawowy przeciwnik. Porusza się w dół, odbijając się od ścian. Strzela pojedynczymi pociskami prosto w dół.',
+      };
+
+    case EnemyType.YELLOW:
+      return {
+        name: 'Ciężki Bombardier',
+        description: 'Duży, niebezpieczny wróg. Potrafi czasem cofać się w górę, co czyni go nieprzewidywalnym. Strzela potrójną salwą pocisków!',
+      };
+
+    case EnemyType.PURPLE:
+      return {
+        name: 'Szybki Pościg',
+        description: 'Mały i zwinny. Aktywnie śledzi twoją pozycję, starając się taranować. Nie strzela, ale jest bardzo szybki!',
+      };
+
+    case EnemyType.TANK:
+      return {
+        name: 'Opancerzony Czołg',
+        description: 'Masywny i powolny, ale niezwykle wytrzymały. Posiada 5 punktów życia - potrzeba wielu trafień, by go zniszczyć.',
+      };
+
+    case EnemyType.TELEPORT:
+      return {
+        name: 'Teleporter',
+        description: 'Tajemniczy wróg zdolny do teleportacji. Co sekundę przeskakuje w dół, zmieniając pozycję. Strzela w kierunku gracza!',
+      };
+  }
 }
