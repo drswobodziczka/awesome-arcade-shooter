@@ -14,6 +14,7 @@ describe('Enemy Spawning', () => {
       lastYellowSpawn: 0,
       lastPurpleSpawn: 0,
       lastTankSpawn: 0,
+      lastTeleportSpawn: 0,
     };
     config = {
       canvasWidth: 400,
@@ -57,17 +58,32 @@ describe('Enemy Spawning', () => {
       const tankEnemies = enemies.filter((e) => e.type === EnemyType.TANK);
       expect(tankEnemies).toHaveLength(1);
     });
+
+    it('TELEPORT spawns after 30s unlock', () => {
+      spawnEnemies(enemies, timers, 30000, 5000, config);
+
+      const teleportEnemies = enemies.filter((e) => e.type === EnemyType.TELEPORT);
+      expect(teleportEnemies).toHaveLength(1);
+    });
+
+    it('TELEPORT does not spawn before 30s unlock', () => {
+      spawnEnemies(enemies, timers, 29999, 5000, config);
+
+      const teleportEnemies = enemies.filter((e) => e.type === EnemyType.TELEPORT);
+      expect(teleportEnemies).toHaveLength(0);
+    });
   });
 
   describe('Spawn Timer Reset', () => {
     it('updates spawn timers after spawning', () => {
       const now = 10000;
-      spawnEnemies(enemies, timers, 20000, now, config);
+      spawnEnemies(enemies, timers, 30000, now, config);
 
       expect(timers.lastStandardSpawn).toBe(now);
       expect(timers.lastYellowSpawn).toBe(now);
       expect(timers.lastPurpleSpawn).toBe(now);
       expect(timers.lastTankSpawn).toBe(now);
+      expect(timers.lastTeleportSpawn).toBe(now);
     });
   });
 });
