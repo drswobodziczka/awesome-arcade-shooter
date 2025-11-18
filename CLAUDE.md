@@ -9,6 +9,16 @@
 - If Rafal wants details, he'll ask explicitly
 - Respect token budget and cognitive load
 
+## ⚠️ CRITICAL RULE #2: WRITE CODE ACCORDING TO PROJECT'S GUIDELINES
+
+=> /docs/agent/coding_guidelines.md
+=> /docs/agent/tech-stack-justification.md
+=> /docs/agent/game-mechanics.md
+
+## ⚠️ CRITICAL RULE #3: WRITE TESTS ACCORDING TO PROJECT'S GUIDELINES
+
+=> /docs/agent/testing_guidelines.md
+
 ---
 
 ## Project Type
@@ -50,3 +60,5 @@ Every file, interface, and function documented with JSDoc. Key modules:
 - `enemies.ts` - 4 enemy types with behaviors and unlock system
 - `spawning.ts` - Time-based spawn intervals
 - `rendering.ts` - Canvas 2D drawing
+
+
