@@ -52,7 +52,7 @@ describe('Enemy Movement - Boundary Fixes', () => {
     const enemy = createEnemy(EnemyType.YELLOW, 100, -10, 0);
     enemy.vy = -1.5; // moving upward
 
-    updateEnemyMovement(enemy, 200, 400, 30, 400, 600);
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 600, undefined, 1.0);
 
     expect(enemy.vy).toBeGreaterThan(0); // Should be forced downward
   });
@@ -63,7 +63,7 @@ describe('Enemy Movement - Boundary Fixes', () => {
     const playerWidth = 50; // Different from hardcoded 30
     const initialX = enemy.x;
 
-    updateEnemyMovement(enemy, playerX, 400, playerWidth, 400, 600);
+    updateEnemyMovement(enemy, playerX, 400, playerWidth, 400, 600, undefined, 1.0);
 
     // Enemy should move toward playerX + playerWidth/2 = 225
     expect(enemy.x).toBeGreaterThan(initialX);
@@ -76,7 +76,7 @@ describe('TELEPORT Enemy Movement', () => {
     const initialY = enemy.y;
 
     // Call with time 1000ms later (teleport should occur)
-    updateEnemyMovement(enemy, 200, 400, 30, 400, 600, 2000);
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 600, 2000, 1.0);
 
     // Enemy should have teleported down by 100-150px
     expect(enemy.y).toBeGreaterThan(initialY + 90); // At least 100 - some margin
@@ -89,7 +89,7 @@ describe('TELEPORT Enemy Movement', () => {
     const initialX = enemy.x;
 
     // Call with time 500ms later (no teleport should occur)
-    updateEnemyMovement(enemy, 200, 400, 30, 400, 600, 1500);
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 600, 1500, 1.0);
 
     // Enemy should have only moved slowly down (0.3px)
     expect(enemy.y).toBe(initialY + 0.3);
@@ -102,7 +102,7 @@ describe('TELEPORT Enemy Movement', () => {
     const initialY = enemy.y;
 
     // Teleport would put enemy at 550 + 100-150 = 650-700, which is off-screen
-    updateEnemyMovement(enemy, 200, 400, 30, 400, canvasHeight, 2000);
+    updateEnemyMovement(enemy, 200, 400, 30, 400, canvasHeight, 2000, 1.0);
 
     // Enemy should NOT have teleported (teleport distance would exceed bounds)
     // It should only have moved slowly down by 0.3px
@@ -115,7 +115,7 @@ describe('TELEPORT Enemy Movement', () => {
     const initialY = enemy.y;
 
     // Teleport would put enemy at 400 + 100-150 = 500-550, which is within bounds
-    updateEnemyMovement(enemy, 200, 400, 30, 400, canvasHeight, 2000);
+    updateEnemyMovement(enemy, 200, 400, 30, 400, canvasHeight, 2000, 1.0);
 
     // Enemy should have teleported
     expect(enemy.y).toBeGreaterThan(initialY + 90);
@@ -126,7 +126,7 @@ describe('TELEPORT Enemy Movement', () => {
     const initialY = enemy.y;
 
     // Call with same time (no teleport)
-    updateEnemyMovement(enemy, 200, 400, 30, 400, 600, 1000);
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 600, 1000, 1.0);
 
     // Should move down by speed (0.3)
     expect(enemy.y).toBe(initialY + 0.3);
@@ -139,7 +139,7 @@ describe('TELEPORT Enemy Movement', () => {
     // Create multiple enemies and teleport them
     for (let i = 0; i < 10; i++) {
       const enemy = createEnemy(EnemyType.TELEPORT, 100, 50, 1000);
-      updateEnemyMovement(enemy, 200, 400, 30, canvasWidth, 600, 2000);
+      updateEnemyMovement(enemy, 200, 400, 30, canvasWidth, 600, 2000, 1.0);
       positions.add(Math.floor(enemy.x));
     }
 
