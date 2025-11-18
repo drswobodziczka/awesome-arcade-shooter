@@ -7,6 +7,18 @@
 import Phaser from 'phaser';
 
 /**
+ * Game configuration constants.
+ */
+const CONFIG = {
+  PLAYER_SPEED: 5,
+  PLAYER_SIZE: 30,
+  GAME_SPEED: 0.5,
+  SHOOT_INTERVAL: 200,
+  BULLET_SPEED: 7,
+  BULLET_SIZE: 5,
+};
+
+/**
  * Main game scene class.
  * Handles game initialization, update loop, and rendering via Phaser.
  */
@@ -15,6 +27,14 @@ export class MainGameScene extends Phaser.Scene {
   private score: number = 0;
   /** DOM element for score display */
   private scoreText?: Phaser.GameObjects.Text;
+  /** Player sprite */
+  private player?: Phaser.GameObjects.Triangle;
+  /** Keyboard cursor keys */
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  /** Last player shot timestamp */
+  private lastPlayerShot: number = 0;
+  /** Player bullets group */
+  private bullets?: Phaser.Physics.Arcade.Group;
 
   constructor() {
     super({ key: 'MainGameScene' });
@@ -54,6 +74,27 @@ export class MainGameScene extends Phaser.Scene {
         fontFamily: 'Arial',
       }
     ).setOrigin(0.5, 1);
+
+    // Create player (cyan triangle pointing up)
+    const playerX = this.scale.width / 2;
+    const playerY = this.scale.height - CONFIG.PLAYER_SIZE - 20;
+    this.player = this.add.triangle(
+      playerX,
+      playerY,
+      0, 0,                              // top point
+      -CONFIG.PLAYER_SIZE/2, CONFIG.PLAYER_SIZE,  // bottom-left
+      CONFIG.PLAYER_SIZE/2, CONFIG.PLAYER_SIZE,   // bottom-right
+      0x00d4ff                           // cyan color
+    );
+
+    // Setup keyboard input
+    this.cursors = this.input.keyboard?.createCursorKeys();
+
+    // Create bullets group
+    this.bullets = this.physics.add.group({
+      defaultKey: 'bullet',
+      maxSize: 50,
+    });
   }
 
   /**
@@ -61,7 +102,55 @@ export class MainGameScene extends Phaser.Scene {
    * Called every frame (~60 FPS) - handle input, movement, collisions.
    */
   update(): void {
-    // Game logic will be migrated here in later steps
+    if (!this.player || !this.cursors || !this.bullets) return;
+
+    // Player movement
+    const playerSpeed = CONFIG.PLAYER_SPEED * CONFIG.GAME_SPEED;
+
+    if (this.cursors.left.isDown && this.player.x > CONFIG.PLAYER_SIZE / 2) {
+      this.player.x -= playerSpeed;
+    }
+    if (this.cursors.right.isDown && this.player.x < this.scale.width - CONFIG.PLAYER_SIZE / 2) {
+      this.player.x += playerSpeed;
+    }
+    if (this.cursors.up.isDown && this.player.y > CONFIG.PLAYER_SIZE) {
+      this.player.y -= playerSpeed;
+    }
+    if (this.cursors.down.isDown && this.player.y < this.scale.height - CONFIG.PLAYER_SIZE) {
+      this.player.y += playerSpeed;
+    }
+
+    // Player shooting
+    const now = Date.now();
+    if (this.cursors.space.isDown && now - this.lastPlayerShot > CONFIG.SHOOT_INTERVAL) {
+      this.shootBullet();
+      this.lastPlayerShot = now;
+    }
+
+    // Update bullets (move upward, destroy if off-screen)
+    this.bullets.children.entries.forEach((bullet) => {
+      const rect = bullet as Phaser.GameObjects.Rectangle;
+      rect.y -= CONFIG.BULLET_SPEED * CONFIG.GAME_SPEED;
+      if (rect.y < -rect.height) {
+        rect.destroy();
+      }
+    });
+  }
+
+  /**
+   * Creates and fires a bullet from player position.
+   */
+  private shootBullet(): void {
+    if (!this.player) return;
+
+    const bullet = this.add.rectangle(
+      this.player.x,
+      this.player.y - CONFIG.PLAYER_SIZE / 2,
+      CONFIG.BULLET_SIZE,
+      CONFIG.BULLET_SIZE * 2,
+      0x00ff00 // green
+    );
+    this.bullets?.add(bullet);
   }
 
   /**
