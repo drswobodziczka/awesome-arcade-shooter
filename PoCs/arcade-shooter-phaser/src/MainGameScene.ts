@@ -65,7 +65,14 @@ export class MainGameScene extends Phaser.Scene {
    * Called before create() - load sprites, audio, etc.
    */
   preload(): void {
-    // Assets will be loaded here in later steps
+    // Create particle textures programmatically
+    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+
+    // Explosion particle (small square)
+    graphics.fillStyle(0xffffff);
+    graphics.fillRect(0, 0, 4, 4);
+    graphics.generateTexture('particle', 4, 4);
+    graphics.clear();
   }
 
   /**
@@ -262,6 +269,10 @@ export class MainGameScene extends Phaser.Scene {
             const points = getEnemyProperties(enemy.type).points;
             this.score += points;
             this.updateScore(this.score);
+
+            // Create explosion effect
+            this.createExplosion(enemy.sprite.x, enemy.sprite.y, enemy.type);
+
             enemy.sprite.destroy();
             this.enemies.splice(i, 1);
           }
@@ -380,6 +391,35 @@ export class MainGameScene extends Phaser.Scene {
    */
   getScore(): number {
     return this.score;
+  }
+
+  /**
+   * Creates an explosion particle effect at the given position.
+   * Effect color and intensity vary by enemy type.
+   *
+   * @param x - X coordinate of explosion
+   * @param y - Y coordinate of explosion
+   * @param enemyType - Type of enemy that exploded
+   */
+  private createExplosion(x: number, y: number, enemyType: EnemyType): void {
+    const props = getEnemyProperties(enemyType);
+    const color = parseInt(props.color.replace('#', ''), 16);
+
+    // Create particle emitter
+    const particles = this.add.particles(x, y, 'particle', {
+      speed: { min: 50, max: 200 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 1.5, end: 0 },
+      tint: color,
+      lifespan: 500,
+      quantity: enemyType === EnemyType.TANK ? 30 : 15, // More particles for TANK
+      blendMode: 'ADD',
+    });
+
+    // Auto-destroy emitter after effect completes
+    this.time.delayedCall(600, () => {
+      particles.destroy();
+    });
   }
 
   /**
