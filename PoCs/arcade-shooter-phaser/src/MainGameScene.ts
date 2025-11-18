@@ -53,6 +53,8 @@ export class MainGameScene extends Phaser.Scene {
   };
   /** Game start timestamp */
   private gameStartTime: number = 0;
+  /** Game over flag */
+  private gameOver: boolean = false;
 
   constructor() {
     super({ key: 'MainGameScene' });
@@ -108,6 +110,9 @@ export class MainGameScene extends Phaser.Scene {
       0x00d4ff                           // cyan color
     );
 
+    // Enable physics on player
+    this.physics.add.existing(this.player);
+
     // Setup keyboard input
     this.cursors = this.input.keyboard?.createCursorKeys();
 
@@ -116,6 +121,8 @@ export class MainGameScene extends Phaser.Scene {
       defaultKey: 'bullet',
       maxSize: 50,
     });
+
+    // Setup collisions (will be implemented as enemies are created)
   }
 
   /**
@@ -124,6 +131,12 @@ export class MainGameScene extends Phaser.Scene {
    */
   update(): void {
     if (!this.player || !this.cursors || !this.bullets) return;
+
+    // Handle game over
+    if (this.gameOver) {
+      this.showGameOver();
+      return;
+    }
 
     const now = Date.now();
     const gameTime = now - this.gameStartTime;
@@ -229,6 +242,49 @@ export class MainGameScene extends Phaser.Scene {
       }
       return inBounds;
     });
+
+    // Check collisions: bullets vs enemies
+    this.bullets.children.entries.forEach((bulletObj) => {
+      const bullet = bulletObj as Phaser.GameObjects.Rectangle;
+      if (!bullet.active) return;
+
+      for (let i = 0; i < this.enemies.length; i++) {
+        const enemy = this.enemies[i];
+        if (this.checkOverlap(bullet, enemy.sprite)) {
+          // Damage enemy
+          enemy.hp -= 1;
+
+          // Destroy bullet
+          bullet.destroy();
+
+          // Remove enemy if HP depleted
+          if (enemy.hp <= 0) {
+            const points = getEnemyProperties(enemy.type).points;
+            this.score += points;
+            this.updateScore(this.score);
+            enemy.sprite.destroy();
+            this.enemies.splice(i, 1);
+          }
+          break;
+        }
+      }
+    });
+
+    // Check collisions: player vs enemies
+    for (const enemy of this.enemies) {
+      if (this.checkOverlap(this.player, enemy.sprite)) {
+        this.gameOver = true;
+        return;
+      }
+    }
+
+    // Check collisions: player vs enemy bullets
+    for (const bullet of this.enemyBullets) {
+      if (this.checkOverlap(this.player, bullet)) {
+        this.gameOver = true;
+        return;
+      }
+    }
   }
 
   /**
@@ -324,5 +380,77 @@ export class MainGameScene extends Phaser.Scene {
    */
   getScore(): number {
     return this.score;
+  }
+
+  /**
+   * Simple AABB collision detection between two game objects.
+   * @param a - First game object
+   * @param b - Second game object
+   * @returns true if objects overlap
+   */
+  private checkOverlap(a: Phaser.GameObjects.GameObject, b: Phaser.GameObjects.GameObject): boolean {
+    const boundsA = (a as any).getBounds ? (a as any).getBounds() : { x: (a as any).x, y: (a as any).y, width: 30, height: 30 };
+    const boundsB = (b as any).getBounds ? (b as any).getBounds() : { x: (b as any).x, y: (b as any).y, width: 30, height: 30 };
+
+    return boundsA.x < boundsB.x + boundsB.width &&
+           boundsA.x + boundsA.width > boundsB.x &&
+           boundsA.y < boundsB.y + boundsB.height &&
+           boundsA.y + boundsA.height > boundsB.y;
+  }
+
+  /**
+   * Displays game over screen with final score.
+   */
+  private showGameOver(): void {
+    // Darken screen
+    this.add.rectangle(
+      this.scale.width / 2,
+      this.scale.height / 2,
+      this.scale.width,
+      this.scale.height,
+      0x000000,
+      0.7
+    );
+
+    // Game over text
+    this.add.text(
+      this.scale.width / 2,
+      this.scale.height / 2 - 40,
+      'GAME OVER',
+      {
+        fontSize: '48px',
+        color: '#e94560',
+        fontFamily: 'Arial',
+      }
+    ).setOrigin(0.5);
+
+    // Final score
+    this.add.text(
+      this.scale.width / 2,
+      this.scale.height / 2 + 10,
+      `Score: ${this.score}`,
+      {
+        fontSize: '24px',
+        color: '#ffffff',
+        fontFamily: 'Arial',
+      }
+    ).setOrigin(0.5);
+
+    // Restart hint
+    this.add.text(
+      this.scale.width / 2,
+      this.scale.height / 2 + 50,
+      'Press Enter to restart',
+      {
+        fontSize: '18px',
+        color: '#ffffff',
+        fontFamily: 'Arial',
+      }
+    ).setOrigin(0.5);
+
+    // Handle restart
+    this.input.keyboard?.once('keydown-ENTER', () => {
+      this.scene.restart();
+    });
   }
 }
