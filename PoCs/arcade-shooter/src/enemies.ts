@@ -19,6 +19,7 @@ export enum EnemyType {
   PURPLE = 'PURPLE',
   /** Heavy enemy: slow movement, 5 HP with health bar, unlocks at 20s */
   TANK = 'TANK',
+  TELEPORT = 'TELEPORT',
 }
 
 /**
@@ -38,6 +39,7 @@ export interface Enemy extends GameObject {
   hp: number;
   /** Maximum hit points for this enemy (used for HP bar rendering) */
   maxHp: number;
+  lastTeleport?: number;
 }
 
 /**
@@ -117,6 +119,17 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         hp: 5,
         points: 50,
       };
+
+    case EnemyType.TELEPORT:
+      return {
+        size: 25, // slightly smaller than player
+        speed: 0.3, // very slow between teleports
+        horizontalSpeed: 0,
+        color: '#ff00ff', // magenta (will change dynamically)
+        shootInterval: 1500,
+        canShoot: true,
+        hp: 1,
+      };
   }
 }
 
@@ -139,7 +152,7 @@ export function createEnemy(
   const props = getEnemyProperties(type);
   const vx = (Math.random() - 0.5) * 2 * props.horizontalSpeed;
 
-  return {
+  const enemy: Enemy = {
     type,
     x,
     y,
@@ -151,6 +164,13 @@ export function createEnemy(
     hp: props.hp,
     maxHp: props.hp,
   };
+
+  // Initialize lastTeleport for TELEPORT enemy
+  if (type === EnemyType.TELEPORT) {
+    enemy.lastTeleport = now;
+  }
+
+  return enemy;
 }
 
 /**
@@ -168,21 +188,25 @@ export function createEnemy(
  * @param playerY - Current player Y position (unused currently)
  * @param playerWidth - Player width for centering calculations
  * @param canvasWidth - Canvas width for boundary checks
+ * @param gameSpeed - Global game speed multiplier (< 1 to slow down, > 1 to speed up)
  */
 export function updateEnemyMovement(
   enemy: Enemy,
   playerX: number,
   playerY: number,
   playerWidth: number,
-  canvasWidth: number
+  canvasWidth: number,
+  canvasHeight: number,
+  now?: number,
+  gameSpeed: number
 ): void {
   const props = getEnemyProperties(enemy.type);
 
   switch (enemy.type) {
     case EnemyType.STANDARD:
       // Move down and bounce horizontally
-      enemy.y += enemy.vy;
-      enemy.x += enemy.vx;
+      enemy.y += enemy.vy * gameSpeed;
+      enemy.x += enemy.vx * gameSpeed;
 
       if (enemy.x <= 0 || enemy.x >= canvasWidth - enemy.width) {
         enemy.vx = -enemy.vx;
@@ -192,8 +216,8 @@ export function updateEnemyMovement(
 
     case EnemyType.YELLOW:
       // Can move backward (up) sometimes
-      enemy.y += enemy.vy;
-      enemy.x += enemy.vx;
+      enemy.y += enemy.vy * gameSpeed;
+      enemy.x += enemy.vx * gameSpeed;
 
       // Randomly reverse vertical direction, but not if too far up
       if (Math.random() < 0.01 && enemy.y > 50) {
@@ -219,13 +243,13 @@ export function updateEnemyMovement(
 
       // Move toward player horizontally
       if (centerX < targetX - 5) {
-        enemy.x += props.horizontalSpeed;
+        enemy.x += props.horizontalSpeed * gameSpeed;
       } else if (centerX > targetX + 5) {
-        enemy.x -= props.horizontalSpeed;
+        enemy.x -= props.horizontalSpeed * gameSpeed;
       }
 
       // Move down
-      enemy.y += props.speed;
+      enemy.y += props.speed * gameSpeed;
 
       // Keep in bounds
       enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
@@ -233,13 +257,35 @@ export function updateEnemyMovement(
 
     case EnemyType.TANK:
       // Slow, steady movement
-      enemy.y += enemy.vy;
-      enemy.x += enemy.vx;
+      enemy.y += enemy.vy * gameSpeed;
+      enemy.x += enemy.vx * gameSpeed;
 
       if (enemy.x <= 0 || enemy.x >= canvasWidth - enemy.width) {
         enemy.vx = -enemy.vx;
         enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
       }
+      break;
+
+    case EnemyType.TELEPORT:
+      // Teleport every second to lower Y position with random X
+      if (now && enemy.lastTeleport && now - enemy.lastTeleport >= 1000) {
+        // Teleport: jump down 100-150px and to random X
+        const teleportDistance = 100 + Math.random() * 50;
+        const newY = enemy.y + teleportDistance;
+
+        // Only teleport if it won't go off-screen
+        if (newY < canvasHeight - enemy.height) {
+          enemy.y = newY;
+          enemy.x = Math.random() * (canvasWidth - enemy.width);
+        }
+        enemy.lastTeleport = now;
+      }
+
+      // Between teleports, move down very slowly
+      enemy.y += props.speed;
+
+      // Keep in bounds horizontally
+      enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
       break;
   }
 }
@@ -268,6 +314,8 @@ export function isEnemyTypeUnlocked(type: EnemyType, gameTime: number): boolean 
       return gameTime >= 20000; // 20 seconds
     case EnemyType.TANK:
       return gameTime >= 20000; // 20 seconds
+    case EnemyType.TELEPORT:
+      return gameTime >= 30000; // 30 seconds
   }
 }
 

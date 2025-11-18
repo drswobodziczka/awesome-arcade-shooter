@@ -16,9 +16,11 @@ import { Bullet, draw as renderGame, drawGameOver as renderGameOver } from './re
  */
 const CONFIG = {
   /** Canvas width in pixels */
-  CANVAS_WIDTH: 400,
+  CANVAS_WIDTH: 600,
   /** Canvas height in pixels */
-  CANVAS_HEIGHT: 600,
+  CANVAS_HEIGHT: 900,
+  /** Global game speed multiplier (< 1 to slow down, > 1 to speed up) */
+  GAME_SPEED: 0.5,
   /** Player movement speed in pixels per frame */
   PLAYER_SPEED: 5,
   /** Player triangle size (width and height) in pixels */
@@ -89,6 +91,7 @@ const game = {
     lastYellowSpawn: 0,
     lastPurpleSpawn: 0,
     lastTankSpawn: 0,
+    lastTeleportSpawn: 0,
   } as SpawnTimers,
   /** Last player shot timestamp for fire rate limiting */
   lastPlayerShot: 0,
@@ -116,7 +119,15 @@ function init() {
   game.ctx = game.canvas.getContext('2d');
   if (!game.ctx) throw new Error('Failed to get canvas context');
 
-  // Set up keyboard listeners
+  game.gameStartTime = Date.now();
+
+  // Reset spawn timers
+  game.spawnTimers.lastStandardSpawn = 0;
+  game.spawnTimers.lastYellowSpawn = 0;
+  game.spawnTimers.lastPurpleSpawn = 0;
+  game.spawnTimers.lastTankSpawn = 0;
+  game.spawnTimers.lastTeleportSpawn = 0;
+
   window.addEventListener('keydown', (e) => {
     if (!game.started) return; // Ignore input until game starts
     if (e.code === 'Space') e.preventDefault();
@@ -281,22 +292,24 @@ function update() {
   const now = Date.now();
 
   // Move player
+  const playerSpeed = CONFIG.PLAYER_SPEED * CONFIG.GAME_SPEED;
   if (game.keys.left && game.player.x > 0) {
-    game.player.x -= CONFIG.PLAYER_SPEED;
+    game.player.x -= playerSpeed;
   }
   if (game.keys.right && game.player.x < CONFIG.CANVAS_WIDTH - game.player.width) {
-    game.player.x += CONFIG.PLAYER_SPEED;
+    game.player.x += playerSpeed;
   }
   if (game.keys.up && game.player.y > 0) {
-    game.player.y -= CONFIG.PLAYER_SPEED;
+    game.player.y -= playerSpeed;
   }
   if (game.keys.down && game.player.y < CONFIG.CANVAS_HEIGHT - game.player.height) {
-    game.player.y += CONFIG.PLAYER_SPEED;
+    game.player.y += playerSpeed;
   }
 
   // Player shooting
+  const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.GAME_SPEED;
   if (game.keys.space && now - game.lastPlayerShot > CONFIG.PLAYER_SHOOT_INTERVAL) {
-    game.bullets.push(createBullet(game.player, -CONFIG.BULLET_SPEED));
+    game.bullets.push(createBullet(game.player, -bulletSpeed));
     game.lastPlayerShot = now;
   }
 
@@ -342,7 +355,7 @@ function update() {
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
     // Update movement based on enemy type
-    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH);
+    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, now);
 
     // Enemy shooting
     const props = getEnemyProperties(enemy.type);
@@ -351,7 +364,7 @@ function update() {
         // Yellow enemies shoot three bullets: left diagonal, center straight, right diagonal
         const centerX = enemy.x + enemy.width / 2;
         const bottomY = enemy.y + enemy.height;
-        const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
+        const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT * CONFIG.GAME_SPEED;
 
         // Left diagonal bullet
         const leftBullet = createBullet(enemy, bulletSpeed);
@@ -371,9 +384,33 @@ function update() {
         rightBullet.x = centerX - CONFIG.BULLET_SIZE / 2 + 15;
         rightBullet.vx = 2;
         game.enemyBullets.push(rightBullet);
+      } else if (enemy.type === EnemyType.TELEPORT) {
+        // Shoot towards player
+        const enemyCenterX = enemy.x + enemy.width / 2;
+        const enemyCenterY = enemy.y + enemy.height / 2;
+        const playerCenterX = game.player.x + game.player.width / 2;
+        const playerCenterY = game.player.y + game.player.height / 2;
+
+        // Calculate direction vector
+        const dx = playerCenterX - enemyCenterX;
+        const dy = playerCenterY - enemyCenterY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Only shoot if there's a valid distance (avoid division by zero)
+        if (distance > 0.1) {
+          // Normalize and scale by bullet speed
+          const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT;
+          const vx = (dx / distance) * bulletSpeed;
+          const vy = (dy / distance) * bulletSpeed;
+
+          const bullet = createBullet(enemy, vy);
+          bullet.y = enemy.y + enemy.height;
+          bullet.vx = vx;
+          game.enemyBullets.push(bullet);
+        }
       } else {
         // Standard straight bullet
-        const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT);
+        const bullet = createBullet(enemy, CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT * CONFIG.GAME_SPEED);
         bullet.y = enemy.y + enemy.height;
         game.enemyBullets.push(bullet);
       }
