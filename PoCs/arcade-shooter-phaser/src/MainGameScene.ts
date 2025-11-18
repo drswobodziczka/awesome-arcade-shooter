@@ -267,6 +267,12 @@ export class MainGameScene extends Phaser.Scene {
           // Play hit sound
           this.sound.play('hit', { volume: 0.4 });
 
+          // Flash effect on hit
+          this.createHitFlash(enemy.sprite);
+
+          // Hit particles (small sparks)
+          this.createHitParticles(bullet.x, bullet.y);
+
           // Destroy bullet
           bullet.destroy();
 
@@ -281,6 +287,9 @@ export class MainGameScene extends Phaser.Scene {
 
             // Play explosion sound
             this.sound.play('explosion', { volume: 0.5 });
+
+            // Camera shake on explosion
+            this.cameras.main.shake(200, 0.005);
 
             enemy.sprite.destroy();
             this.enemies.splice(i, 1);
@@ -444,6 +453,48 @@ export class MainGameScene extends Phaser.Scene {
       explData[i] = (Math.sin(2 * Math.PI * freq * t) * 0.5 + noise * 0.5) * Math.exp(-t * 8);
     }
     (this.sound as any).decodeAudio('explosion', explBuffer);
+  }
+
+  /**
+   * Creates a brief white flash on hit sprite.
+   * Visual feedback for successful hit.
+   *
+   * @param sprite - The sprite to flash
+   */
+  private createHitFlash(sprite: Phaser.GameObjects.Triangle): void {
+    // Tint sprite white
+    sprite.setTint(0xffffff);
+
+    // Reset tint after 50ms
+    this.time.delayedCall(50, () => {
+      if (sprite.active) {
+        sprite.clearTint();
+      }
+    });
+  }
+
+  /**
+   * Creates small particle sparks at hit location.
+   * Brief visual feedback on bullet impact.
+   *
+   * @param x - X coordinate of impact
+   * @param y - Y coordinate of impact
+   */
+  private createHitParticles(x: number, y: number): void {
+    const particles = this.add.particles(x, y, 'particle', {
+      speed: { min: 20, max: 80 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.8, end: 0 },
+      tint: 0xffff00, // Yellow sparks
+      lifespan: 200,
+      quantity: 5,
+      blendMode: 'ADD',
+    });
+
+    // Auto-destroy emitter
+    this.time.delayedCall(250, () => {
+      particles.destroy();
+    });
   }
 
   /**
