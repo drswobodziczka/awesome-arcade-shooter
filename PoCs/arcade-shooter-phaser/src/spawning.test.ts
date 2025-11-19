@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { spawnEnemies, SpawnTimers, SpawnConfig } from './spawning';
+import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers, SpawnConfig, TestModeSpawnConfig } from './spawning';
 import { Enemy, EnemyType } from './enemies';
 
 describe('Enemy Spawning', () => {
@@ -69,5 +69,79 @@ describe('Enemy Spawning', () => {
       expect(timers.lastPurpleSpawn).toBe(now);
       expect(timers.lastTankSpawn).toBe(now);
     });
+  });
+});
+
+describe('Test Mode Spawning', () => {
+  let enemies: Enemy[];
+  let timers: SpawnTimers;
+  let testConfig: TestModeSpawnConfig;
+
+  beforeEach(() => {
+    enemies = [];
+    timers = {
+      lastStandardSpawn: 0,
+      lastYellowSpawn: 0,
+      lastPurpleSpawn: 0,
+      lastTankSpawn: 0,
+    };
+    testConfig = {
+      canvasWidth: 400,
+      enabledEnemies: [EnemyType.YELLOW, EnemyType.TANK],
+      spawnInterval: 1500,
+    };
+  });
+
+  it('spawns random enemy from enabled list at interval', () => {
+    spawnEnemiesTestMode(enemies, timers, 1501, testConfig);
+
+    expect(enemies).toHaveLength(1);
+    expect(testConfig.enabledEnemies).toContain(enemies[0].type);
+  });
+
+  it('respects spawn interval cooldown', () => {
+    spawnEnemiesTestMode(enemies, timers, 1000, testConfig);
+
+    expect(enemies).toHaveLength(0); // too early
+  });
+
+  it('handles empty enabled list gracefully', () => {
+    const emptyConfig: TestModeSpawnConfig = {
+      canvasWidth: 400,
+      enabledEnemies: [],
+      spawnInterval: 1500,
+    };
+
+    spawnEnemiesTestMode(enemies, timers, 2000, emptyConfig);
+
+    expect(enemies).toHaveLength(0);
+  });
+
+  it('updates lastTestSpawn timer after spawning', () => {
+    const now = 2000;
+    spawnEnemiesTestMode(enemies, timers, now, testConfig);
+
+    expect(timers.lastTestSpawn).toBe(now);
+  });
+
+  it('spawns only from enabled enemy types', () => {
+    const singleTypeConfig: TestModeSpawnConfig = {
+      canvasWidth: 400,
+      enabledEnemies: [EnemyType.PURPLE],
+      spawnInterval: 1500,
+    };
+
+    spawnEnemiesTestMode(enemies, timers, 2000, singleTypeConfig);
+
+    expect(enemies).toHaveLength(1);
+    expect(enemies[0].type).toBe(EnemyType.PURPLE);
+  });
+
+  it('positions enemies within canvas bounds', () => {
+    spawnEnemiesTestMode(enemies, timers, 2000, testConfig);
+
+    expect(enemies).toHaveLength(1);
+    expect(enemies[0].x).toBeGreaterThanOrEqual(0);
+    expect(enemies[0].x).toBeLessThan(testConfig.canvasWidth);
   });
 });
