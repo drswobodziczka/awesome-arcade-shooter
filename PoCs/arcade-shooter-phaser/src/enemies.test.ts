@@ -7,6 +7,11 @@ import {
   isEnemyTypeUnlocked,
 } from './enemies';
 
+// Teleport enemy constants (mirrored from enemies.ts for testing)
+const TELEPORT_COOLDOWN_MS = 1000;
+const TELEPORT_DISTANCE_MIN = 100;
+const TELEPORT_DISTANCE_MAX = 150;
+
 describe('Enemy Properties', () => {
   it('STANDARD enemy has size 30 and 1 HP', () => {
     const props = getEnemyProperties(EnemyType.STANDARD);
@@ -101,16 +106,17 @@ describe('TELEPORT Enemy Movement', () => {
     expect(enemy.y).toBeLessThan(initialY + 1); // But very slowly (0.3 speed)
   });
 
-  it('teleports after 1000ms cooldown', () => {
+  it('teleports after TELEPORT_COOLDOWN_MS', () => {
     const now = Date.now();
     const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
     const initialY = enemy.y;
 
-    // Simulate 1000ms passing
-    const futureTime = now + 1000;
+    // Simulate TELEPORT_COOLDOWN_MS passing
+    const futureTime = now + TELEPORT_COOLDOWN_MS;
     updateEnemyMovement(enemy, 200, 400, 30, 400, 850, 1.0, futureTime);
 
-    expect(enemy.y).toBeGreaterThan(initialY + 50); // Teleported down 100-150px
+    // Should teleport down between TELEPORT_DISTANCE_MIN and TELEPORT_DISTANCE_MAX
+    expect(enemy.y).toBeGreaterThan(initialY + TELEPORT_DISTANCE_MIN - 10); // Allow small margin
   });
 
   it('does not teleport off-screen (boundary check)', () => {
@@ -119,7 +125,7 @@ describe('TELEPORT Enemy Movement', () => {
     const enemy = createEnemy(EnemyType.TELEPORT, 100, canvasHeight - 100, now);
 
     // Try to teleport from near bottom
-    const futureTime = now + 1000;
+    const futureTime = now + TELEPORT_COOLDOWN_MS;
     updateEnemyMovement(enemy, 200, 400, 30, 400, canvasHeight, 1.0, futureTime);
 
     // Should not teleport below canvasHeight - enemy.height
@@ -146,7 +152,7 @@ describe('TELEPORT Enemy Movement', () => {
     // Create multiple enemies and teleport them
     for (let i = 0; i < 5; i++) {
       const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
-      updateEnemyMovement(enemy, 200, 400, 30, canvasWidth, 850, 1.0, now + 1000);
+      updateEnemyMovement(enemy, 200, 400, 30, canvasWidth, 850, 1.0, now + TELEPORT_COOLDOWN_MS);
       positions.push(enemy.x);
     }
 

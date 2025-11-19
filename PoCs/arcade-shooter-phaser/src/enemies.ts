@@ -7,6 +7,13 @@
 import { GameObject } from './utils';
 
 /**
+ * Teleport enemy movement constants.
+ */
+const TELEPORT_COOLDOWN_MS = 1000; // Time between teleports in milliseconds
+const TELEPORT_DISTANCE_MIN = 100; // Minimum distance to teleport downward in pixels
+const TELEPORT_DISTANCE_MAX = 150; // Maximum distance to teleport downward in pixels
+
+/**
  * Enum defining all available enemy types in the game.
  * Each type has distinct size, speed, behavior, and unlock timing.
  */
@@ -208,7 +215,7 @@ export function createEnemy(
  * @param canvasWidth - Canvas width for boundary checks
  * @param canvasHeight - Canvas height for boundary checks
  * @param gameSpeed - Global game speed multiplier (< 1 to slow down, > 1 to speed up)
- * @param now - Current timestamp for teleport cooldown
+ * @param now - Current timestamp in milliseconds (required for TELEPORT enemy cooldown)
  */
 export function updateEnemyMovement(
   enemy: Enemy,
@@ -218,7 +225,7 @@ export function updateEnemyMovement(
   canvasWidth: number,
   canvasHeight: number,
   gameSpeed: number,
-  now?: number
+  now: number
 ): void {
   const props = getEnemyProperties(enemy.type);
 
@@ -287,10 +294,10 @@ export function updateEnemyMovement(
       break;
 
     case EnemyType.TELEPORT:
-      // Teleport every second to lower Y position with random X
-      if (now && enemy.lastTeleport && now - enemy.lastTeleport >= 1000) {
-        // Teleport: jump down 100-150px and to random X
-        const teleportDistance = 100 + Math.random() * 50;
+      // Teleport every TELEPORT_COOLDOWN_MS to lower Y position with random X
+      if (enemy.lastTeleport && now - enemy.lastTeleport >= TELEPORT_COOLDOWN_MS) {
+        // Teleport: jump down TELEPORT_DISTANCE_MIN to TELEPORT_DISTANCE_MAX pixels and to random X
+        const teleportDistance = TELEPORT_DISTANCE_MIN + Math.random() * (TELEPORT_DISTANCE_MAX - TELEPORT_DISTANCE_MIN);
         const newY = enemy.y + teleportDistance;
 
         // Only teleport if it won't go off-screen
