@@ -41,3 +41,26 @@ Celem jest to, żeby reviewer mógł natychmiastowo:
 - zrozumieć intencję PR,
 - zobaczyć główne decyzje,
 - przetestowac, ze dziala
+
+## AGENT WORKFLOW (PR CREATION)
+
+ Zalecany minimalny workflow dla agenta przy wystawianiu PR w tym repo:
+
+ - **1. Przygotuj zmianę**
+   - Upewnij się, że kod jest skompilowany i testy lokalne przeszły.
+   - Zadbaj o czysty diff (tylko pliki związane z zadaniem).
+
+ - **2. Commit**
+   - Nazwa brancha: krótka, opisowa, np. `fix/...` albo `feature/...`.
+   - Commit message: jednozdaniowe podsumowanie efektu (angielski).
+
+ - **3. Push & PR**
+   - Wypchnij branch na GitHuba.
+   - Utwórz PR za pomocą `gh pr create`:
+     - **base**: gałąź wskazana w zadaniu (np. `main` lub dedykowany branch PoC).
+     - **head**: aktualny branch z Twoją zmianą.
+   - Opis PR napisz według sekcji z tego pliku: `BACKGROUND`, `WHAT & WHY?`, `HOW?`, `TESTING`.
+
+ - **4. Po wystawieniu PR**
+   - Nie zmieniaj bez potrzeby branchy bazowej i nazwy brancha.
+   - Dalsze poprawki rób w tym samym branchu; opis PR aktualizuj tylko jeśli istotnie zmienia się zakres.
