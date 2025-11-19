@@ -17,9 +17,9 @@ import { showEnemyIntroduction, isFirstEncounter, markAsEncountered } from './en
  */
 const CONFIG = {
   /** Canvas width in pixels */
-  CANVAS_WIDTH: 600,
+  CANVAS_WIDTH: 550,
   /** Canvas height in pixels */
-  CANVAS_HEIGHT: 900,
+  CANVAS_HEIGHT: 850,
   /** Global game speed multiplier (< 1 to slow down, > 1 to speed up) */
   GAME_SPEED: 0.5,
   /** Player movement speed in pixels per frame */
