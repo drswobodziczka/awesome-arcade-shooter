@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcade Plane Shooter</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1a1a2e;
+      font-family: Arial, sans-serif;
+    }
+    #gameContainer {
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid #0f3460;
+      background: #16213e;
+    }
+    #score {
+      color: #e94560;
+      font-size: 24px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer">
+    <!-- Phaser will inject canvas here -->
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
