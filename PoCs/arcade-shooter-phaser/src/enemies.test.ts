@@ -66,6 +66,11 @@ describe('Enemy Unlock Timings', () => {
     expect(isEnemyTypeUnlocked(EnemyType.TANK, 19999)).toBe(false);
     expect(isEnemyTypeUnlocked(EnemyType.TANK, 20000)).toBe(true);
   });
+
+  it('TELEPORT unlocks at 30 seconds', () => {
+    expect(isEnemyTypeUnlocked(EnemyType.TELEPORT, 29999)).toBe(false);
+    expect(isEnemyTypeUnlocked(EnemyType.TELEPORT, 30000)).toBe(true);
+  });
 });
 
 describe('Enemy Creation', () => {
@@ -73,6 +78,81 @@ describe('Enemy Creation', () => {
     const enemy = createEnemy(EnemyType.TANK, 0, 0, 0);
     expect(enemy.hp).toBe(5);
     expect(enemy.maxHp).toBe(5);
+  });
+
+  it('creates TELEPORT enemy with lastTeleport initialized', () => {
+    const now = Date.now();
+    const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
+    expect(enemy.lastTeleport).toBe(now);
+    expect(enemy.hp).toBe(1);
+  });
+});
+
+describe('TELEPORT Enemy Movement', () => {
+  it('moves down slowly between teleports with gameSpeed applied', () => {
+    const now = Date.now();
+    const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
+    const initialY = enemy.y;
+
+    // Move without teleporting (cooldown not met)
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 850, 1.0, now);
+
+    expect(enemy.y).toBeGreaterThan(initialY); // Should move down
+    expect(enemy.y).toBeLessThan(initialY + 1); // But very slowly (0.3 speed)
+  });
+
+  it('teleports after 1000ms cooldown', () => {
+    const now = Date.now();
+    const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
+    const initialY = enemy.y;
+
+    // Simulate 1000ms passing
+    const futureTime = now + 1000;
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 850, 1.0, futureTime);
+
+    expect(enemy.y).toBeGreaterThan(initialY + 50); // Teleported down 100-150px
+  });
+
+  it('does not teleport off-screen (boundary check)', () => {
+    const now = Date.now();
+    const canvasHeight = 850;
+    const enemy = createEnemy(EnemyType.TELEPORT, 100, canvasHeight - 100, now);
+
+    // Try to teleport from near bottom
+    const futureTime = now + 1000;
+    updateEnemyMovement(enemy, 200, 400, 30, 400, canvasHeight, 1.0, futureTime);
+
+    // Should not teleport below canvasHeight - enemy.height
+    expect(enemy.y).toBeLessThanOrEqual(canvasHeight - enemy.height);
+  });
+
+  it('applies gameSpeed multiplier to slow movement', () => {
+    const now = Date.now();
+    const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
+    const initialY = enemy.y;
+
+    // Move with 0.5x game speed
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 850, 0.5, now);
+
+    const moveWithSpeed = enemy.y - initialY;
+    expect(moveWithSpeed).toBeCloseTo(0.15, 1); // 0.3 * 0.5 = 0.15
+  });
+
+  it('randomizes X position on teleport', () => {
+    const now = Date.now();
+    const canvasWidth = 400;
+    const positions: number[] = [];
+
+    // Create multiple enemies and teleport them
+    for (let i = 0; i < 5; i++) {
+      const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
+      updateEnemyMovement(enemy, 200, 400, 30, canvasWidth, 850, 1.0, now + 1000);
+      positions.push(enemy.x);
+    }
+
+    // Should have some variation in X positions (not all the same)
+    const uniquePositions = new Set(positions.map(p => Math.round(p / 10) * 10)); // Round to nearest 10
+    expect(uniquePositions.size).toBeGreaterThan(1);
   });
 });
 

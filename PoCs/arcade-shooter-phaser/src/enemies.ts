@@ -302,7 +302,7 @@ export function updateEnemyMovement(
       }
 
       // Between teleports, move down very slowly
-      enemy.y += props.speed;
+      enemy.y += props.speed * gameSpeed;
 
       // Keep in bounds horizontally
       enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
@@ -358,6 +358,9 @@ export function getAvailableEnemyTypes(gameTime: number): EnemyType[] {
   }
   if (isEnemyTypeUnlocked(EnemyType.TANK, gameTime)) {
     types.push(EnemyType.TANK);
+  }
+  if (isEnemyTypeUnlocked(EnemyType.TELEPORT, gameTime)) {
+    types.push(EnemyType.TELEPORT);
   }
 
   return types;
