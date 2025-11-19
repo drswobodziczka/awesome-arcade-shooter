@@ -149,16 +149,22 @@ describe('TELEPORT Enemy Movement', () => {
     const canvasWidth = 400;
     const positions: number[] = [];
 
-    // Create multiple enemies and teleport them
-    for (let i = 0; i < 5; i++) {
+    // Create multiple enemies and teleport them to gather X positions
+    for (let i = 0; i < 20; i++) {
       const enemy = createEnemy(EnemyType.TELEPORT, 100, 100, now);
       updateEnemyMovement(enemy, 200, 400, 30, canvasWidth, 850, 1.0, now + TELEPORT_COOLDOWN_MS);
       positions.push(enemy.x);
     }
 
-    // Should have some variation in X positions (not all the same)
-    const uniquePositions = new Set(positions.map(p => Math.round(p / 10) * 10)); // Round to nearest 10
-    expect(uniquePositions.size).toBeGreaterThan(1);
+    // With 20 samples, should have significant variation (expect most to be unique within canvasWidth)
+    // All positions should be within valid bounds
+    const inBounds = positions.every(x => x >= 0 && x <= canvasWidth - 25); // 25 = TELEPORT size
+    expect(inBounds).toBe(true);
+
+    // Should have good spread of positions across canvas
+    const minPos = Math.min(...positions);
+    const maxPos = Math.max(...positions);
+    expect(maxPos - minPos).toBeGreaterThan(100); // At least 100px spread
   });
 });
 
