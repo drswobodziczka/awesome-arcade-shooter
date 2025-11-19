@@ -35,6 +35,18 @@ export interface SpawnConfig {
 }
 
 /**
+ * Configuration for test mode spawning.
+ */
+export interface TestModeSpawnConfig {
+  /** Canvas width in pixels for random X positioning */
+  canvasWidth: number;
+  /** Array of enemy types that are enabled for spawning */
+  enabledEnemies: EnemyType[];
+  /** Spawn interval for test mode in milliseconds */
+  spawnInterval: number;
+}
+
+/**
  * Main spawning function that handles all enemy type spawns.
  * Checks unlock conditions, spawn intervals, and adds new enemies to the game.
  *
@@ -108,5 +120,35 @@ export function spawnEnemies(
     const x = Math.random() * (config.canvasWidth - props.size);
     enemies.push(createEnemy(EnemyType.TELEPORT, x, -props.size, now));
     timers.lastTeleportSpawn = now;
+  }
+}
+
+/**
+ * Test mode spawning function that spawns random enemies from the enabled list.
+ * Spawns enemies at a fixed interval, randomly selecting from enabled types.
+ * Uses lastStandardSpawn timer as a shared cooldown for all spawns.
+ *
+ * @param enemies - Game's enemy array (mutated by pushing new enemies)
+ * @param timers - Spawn timer state (uses lastStandardSpawn for test mode cooldown)
+ * @param now - Current timestamp in milliseconds
+ * @param config - Test mode spawn configuration with enabled enemies and interval
+ */
+export function spawnEnemiesTestMode(
+  enemies: Enemy[],
+  timers: SpawnTimers,
+  now: number,
+  config: TestModeSpawnConfig
+): void {
+  // Use lastStandardSpawn as the shared timer for test mode
+  if (now - timers.lastStandardSpawn > config.spawnInterval) {
+    if (config.enabledEnemies.length === 0) return;
+
+    // Pick a random enemy type from enabled list
+    const randomType = config.enabledEnemies[Math.floor(Math.random() * config.enabledEnemies.length)];
+    const props = getEnemyProperties(randomType);
+    const x = Math.random() * (config.canvasWidth - props.size);
+
+    enemies.push(createEnemy(randomType, x, -props.size, now));
+    timers.lastStandardSpawn = now;
   }
 }

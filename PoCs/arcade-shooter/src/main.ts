@@ -7,7 +7,7 @@
 
 import { GameObject, checkCollision } from './utils';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties } from './enemies';
-import { spawnEnemies, SpawnTimers } from './spawning';
+import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers } from './spawning';
 import { Bullet, draw as renderGame, drawGameOver as renderGameOver } from './rendering';
 
 /**
@@ -35,6 +35,8 @@ const CONFIG = {
   STANDARD_ENEMY_SPAWN_INTERVAL: 1000,
   /** Special enemy (YELLOW/PURPLE/TANK) spawn interval in milliseconds */
   SPECIAL_ENEMY_SPAWN_INTERVAL: 4500, // ~4.5x slower for special types
+  /** Test mode spawn interval in milliseconds */
+  TEST_MODE_SPAWN_INTERVAL: 1500,
   /** Multiplier for enemy bullet speed (0.7 = 70% of player bullet speed) */
   ENEMY_BULLET_SPEED_MULT: 0.7,
 };
@@ -54,6 +56,14 @@ const game = {
   gameOver: false,
   /** Game start timestamp in milliseconds (for calculating gameTime) */
   gameStartTime: 0,
+  /** Game mode: 'normal' for progressive spawning, 'test' for custom enemy selection */
+  gameMode: 'normal' as 'normal' | 'test',
+  /** Test mode configuration: which enemy types to spawn */
+  testConfig: {
+    enabledEnemies: [EnemyType.STANDARD] as EnemyType[],
+  },
+  /** Game started flag - false until start button is clicked */
+  started: false,
   /** Player object (spawns at bottom-center) */
   player: {
     x: CONFIG.CANVAS_WIDTH / 2 - CONFIG.PLAYER_SIZE / 2,
@@ -103,7 +113,7 @@ function handleKey(code: string, pressed: boolean) {
 
 /**
  * Initializes the game on page load.
- * Sets up canvas context, registers keyboard listeners, and starts the game loop.
+ * Sets up canvas context, registers keyboard listeners, and UI event handlers.
  */
 function init() {
   game.ctx = game.canvas.getContext('2d');
@@ -119,6 +129,7 @@ function init() {
   game.spawnTimers.lastTeleportSpawn = 0;
 
   window.addEventListener('keydown', (e) => {
+    if (!game.started) return; // Ignore input until game starts
     if (e.code === 'Space') e.preventDefault();
     if (e.code === 'Enter' && game.gameOver) {
       e.preventDefault();
@@ -127,7 +138,133 @@ function init() {
     handleKey(e.code, true);
   });
 
-  window.addEventListener('keyup', (e) => handleKey(e.code, false));
+  window.addEventListener('keyup', (e) => {
+    if (!game.started) return;
+    handleKey(e.code, false);
+  });
+
+  // Set up test panel UI handlers
+  setupTestPanel();
+}
+
+/**
+ * Displays an inline error message in the test panel.
+ *
+ * @param message - Error message to display
+ */
+function showTestPanelError(message: string) {
+  const testPanel = document.getElementById('testPanel')!;
+  const errorDiv = document.createElement('div');
+  errorDiv.id = 'testPanelError';
+  errorDiv.style.cssText = 'color: #ff6b6b; margin-top: 10px; font-size: 14px; font-weight: bold;';
+  errorDiv.textContent = message;
+  testPanel.appendChild(errorDiv);
+}
+
+/**
+ * Sets up the test panel event handlers for mode selection and enemy checkboxes.
+ */
+function setupTestPanel() {
+  const modeRadios = document.querySelectorAll<HTMLInputElement>('input[name="gameMode"]');
+  const enemySelection = document.getElementById('enemySelection')!;
+  const startButton = document.getElementById('startButton')!;
+
+  // Dynamically generate enemy checkboxes from EnemyType enum
+  Object.values(EnemyType).forEach((enemyType, index) => {
+    const props = getEnemyProperties(enemyType);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'enemy-checkbox';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `enemy-${enemyType.toLowerCase()}`;
+    checkbox.value = enemyType;
+    checkbox.checked = index === 0; // Check first enemy by default
+
+    const label = document.createElement('label');
+    label.htmlFor = checkbox.id;
+    label.textContent = `${props.name} (${props.description})`;
+
+    wrapper.appendChild(checkbox);
+    wrapper.appendChild(label);
+    enemySelection.appendChild(wrapper);
+  });
+
+  // Show/hide enemy selection based on mode
+  modeRadios.forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (radio.value === 'test') {
+        enemySelection.classList.remove('hidden');
+      } else {
+        enemySelection.classList.add('hidden');
+      }
+    });
+  });
+
+  // Start button handler
+  startButton.addEventListener('click', () => {
+    // Clear any previous error messages
+    const existingError = document.getElementById('testPanelError');
+    if (existingError) existingError.remove();
+
+    // Get selected mode
+    const selectedMode = document.querySelector<HTMLInputElement>('input[name="gameMode"]:checked')!.value as 'normal' | 'test';
+    game.gameMode = selectedMode;
+
+    // If test mode, get selected enemies
+    if (selectedMode === 'test') {
+      const checkedBoxes = Array.from(
+        document.querySelectorAll<HTMLInputElement>('#enemySelection input[type="checkbox"]:checked')
+      );
+
+      if (checkedBoxes.length === 0) {
+        showTestPanelError('Please select at least one enemy type for test mode!');
+        return;
+      }
+
+      // Validate and map checkbox values to EnemyType enum
+      const checkedEnemies: EnemyType[] = [];
+      for (const cb of checkedBoxes) {
+        const value = cb.value;
+        if (!Object.values(EnemyType).includes(value as EnemyType)) {
+          showTestPanelError(`Invalid enemy type: ${value}`);
+          return;
+        }
+        checkedEnemies.push(value as EnemyType);
+      }
+
+      game.testConfig.enabledEnemies = checkedEnemies;
+    }
+
+    // Hide test panel and start game
+    const testPanel = document.getElementById('testPanel')!;
+    testPanel.classList.add('hidden');
+
+    startGame();
+  });
+}
+
+/**
+ * Starts the game after configuration is complete.
+ */
+function startGame() {
+  game.started = true;
+  game.gameStartTime = Date.now();
+
+  // Enable canvas and update controls text
+  game.canvas.classList.remove('disabled');
+  const controlsEl = document.getElementById('controls');
+  if (controlsEl) {
+    controlsEl.style.opacity = '1';
+    controlsEl.innerHTML = 'Arrow keys: Move | Space: Shoot';
+  }
+
+  // Reset spawn timers
+  game.spawnTimers.lastStandardSpawn = 0;
+  game.spawnTimers.lastYellowSpawn = 0;
+  game.spawnTimers.lastPurpleSpawn = 0;
+  game.spawnTimers.lastTankSpawn = 0;
 
   gameLoop();
 }
@@ -201,12 +338,21 @@ function update() {
   // Calculate game time
   const gameTime = now - game.gameStartTime;
 
-  // Spawn enemies
-  spawnEnemies(game.enemies, game.spawnTimers, gameTime, now, {
-    canvasWidth: CONFIG.CANVAS_WIDTH,
-    standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
-    specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
-  });
+  // Spawn enemies based on game mode
+  if (game.gameMode === 'normal') {
+    spawnEnemies(game.enemies, game.spawnTimers, gameTime, now, {
+      canvasWidth: CONFIG.CANVAS_WIDTH,
+      standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
+      specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
+    });
+  } else {
+    // Test mode: spawn random enemies from enabled list
+    spawnEnemiesTestMode(game.enemies, game.spawnTimers, now, {
+      canvasWidth: CONFIG.CANVAS_WIDTH,
+      enabledEnemies: game.testConfig.enabledEnemies,
+      spawnInterval: CONFIG.TEST_MODE_SPAWN_INTERVAL,
+    });
+  }
 
   // Update bullets
   const updateBullets = (bullets: Bullet[], inBounds: (b: Bullet) => boolean) => {
@@ -231,7 +377,7 @@ function update() {
   // Move enemies and make them shoot
   game.enemies = game.enemies.filter((enemy) => {
     // Update movement based on enemy type
-    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, now, CONFIG.GAME_SPEED);
+    updateEnemyMovement(enemy, game.player.x, game.player.y, game.player.width, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT, CONFIG.GAME_SPEED, now);
 
     // Enemy shooting
     const props = getEnemyProperties(enemy.type);

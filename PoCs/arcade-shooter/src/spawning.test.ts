@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { spawnEnemies, SpawnTimers, SpawnConfig } from './spawning';
+import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers, SpawnConfig, TestModeSpawnConfig } from './spawning';
 import { Enemy, EnemyType } from './enemies';
 
 describe('Enemy Spawning', () => {
@@ -84,6 +84,140 @@ describe('Enemy Spawning', () => {
       expect(timers.lastPurpleSpawn).toBe(now);
       expect(timers.lastTankSpawn).toBe(now);
       expect(timers.lastTeleportSpawn).toBe(now);
+    });
+  });
+});
+
+describe('Test Mode Spawning', () => {
+  let enemies: Enemy[];
+  let timers: SpawnTimers;
+  let testConfig: TestModeSpawnConfig;
+
+  beforeEach(() => {
+    enemies = [];
+    timers = {
+      lastStandardSpawn: 0,
+      lastYellowSpawn: 0,
+      lastPurpleSpawn: 0,
+      lastTankSpawn: 0,
+      lastTeleportSpawn: 0,
+    };
+    testConfig = {
+      canvasWidth: 400,
+      enabledEnemies: [EnemyType.STANDARD, EnemyType.YELLOW],
+      spawnInterval: 1500,
+    };
+  });
+
+  describe('Basic Spawning', () => {
+    it('spawns enemy from enabled list after spawn interval', () => {
+      spawnEnemiesTestMode(enemies, timers, 1501, testConfig);
+
+      expect(enemies).toHaveLength(1);
+      expect(testConfig.enabledEnemies).toContain(enemies[0].type);
+    });
+
+    it('does not spawn before spawn interval elapsed', () => {
+      spawnEnemiesTestMode(enemies, timers, 1000, testConfig);
+
+      expect(enemies).toHaveLength(0);
+    });
+
+    it('updates lastStandardSpawn timer after spawning', () => {
+      const now = 2000;
+      spawnEnemiesTestMode(enemies, timers, now, testConfig);
+
+      expect(timers.lastStandardSpawn).toBe(now);
+    });
+  });
+
+  describe('Enemy Type Selection', () => {
+    it('spawns only from enabled enemy types', () => {
+      testConfig.enabledEnemies = [EnemyType.PURPLE];
+
+      // Spawn multiple times to verify consistency
+      for (let i = 1; i <= 5; i++) {
+        spawnEnemiesTestMode(enemies, timers, i * 2000, testConfig);
+      }
+
+      expect(enemies).toHaveLength(5);
+      enemies.forEach((enemy) => {
+        expect(enemy.type).toBe(EnemyType.PURPLE);
+      });
+    });
+
+    it('spawns random selection from multiple enabled types', () => {
+      testConfig.enabledEnemies = [EnemyType.STANDARD, EnemyType.YELLOW, EnemyType.PURPLE, EnemyType.TANK];
+
+      // Spawn many times to get variety
+      for (let i = 1; i <= 20; i++) {
+        spawnEnemiesTestMode(enemies, timers, i * 2000, testConfig);
+      }
+
+      expect(enemies.length).toBeGreaterThan(0);
+      enemies.forEach((enemy) => {
+        expect(testConfig.enabledEnemies).toContain(enemy.type);
+      });
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('does not spawn when enabled enemies list is empty', () => {
+      testConfig.enabledEnemies = [];
+
+      spawnEnemiesTestMode(enemies, timers, 2000, testConfig);
+
+      expect(enemies).toHaveLength(0);
+    });
+
+    it('handles single enemy type configuration', () => {
+      testConfig.enabledEnemies = [EnemyType.TANK];
+
+      spawnEnemiesTestMode(enemies, timers, 2000, testConfig);
+
+      expect(enemies).toHaveLength(1);
+      expect(enemies[0].type).toBe(EnemyType.TANK);
+    });
+
+    it('respects spawn interval consistently', () => {
+      spawnEnemiesTestMode(enemies, timers, 1500, testConfig);
+      expect(enemies).toHaveLength(0);
+
+      spawnEnemiesTestMode(enemies, timers, 1501, testConfig);
+      expect(enemies).toHaveLength(1);
+
+      // Next spawn should not happen until interval passes again
+      spawnEnemiesTestMode(enemies, timers, 2000, testConfig);
+      expect(enemies).toHaveLength(1);
+
+      spawnEnemiesTestMode(enemies, timers, 3002, testConfig);
+      expect(enemies).toHaveLength(2);
+    });
+  });
+
+  describe('Timer Management', () => {
+    it('uses lastStandardSpawn as shared timer', () => {
+      timers.lastStandardSpawn = 1000;
+
+      spawnEnemiesTestMode(enemies, timers, 2000, testConfig);
+
+      expect(enemies).toHaveLength(0); // Only 1000ms elapsed, needs 1500ms
+
+      spawnEnemiesTestMode(enemies, timers, 2501, testConfig);
+
+      expect(enemies).toHaveLength(1); // Now 1501ms elapsed
+    });
+
+    it('does not modify other timer fields', () => {
+      timers.lastYellowSpawn = 100;
+      timers.lastPurpleSpawn = 200;
+      timers.lastTankSpawn = 300;
+
+      spawnEnemiesTestMode(enemies, timers, 2000, testConfig);
+
+      expect(timers.lastYellowSpawn).toBe(100);
+      expect(timers.lastPurpleSpawn).toBe(200);
+      expect(timers.lastTankSpawn).toBe(300);
     });
   });
 });
