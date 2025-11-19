@@ -27,12 +27,134 @@
       font-size: 24px;
       margin: 10px 0;
     }
+
+    /* Enemy Introduction Modal */
+    #enemyIntroModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #enemyIntroModal.visible {
+      display: flex;
+    }
+
+    .intro-content {
+      background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+      border: 3px solid #e94560;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .intro-title {
+      color: #e94560;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .intro-subtitle {
+      color: #00d4ff;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    #enemyPreviewPhaser {
+      background: #16213e;
+      border: 2px solid #0f3460;
+      border-radius: 10px;
+      margin: 20px auto;
+      display: block;
+      width: 200px;
+      height: 200px;
+    }
+
+    .enemy-name {
+      color: #ffd700;
+      font-size: 32px;
+      font-weight: bold;
+      margin: 20px 0 15px 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .enemy-description {
+      color: #ffffff;
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0 0 25px 0;
+      text-align: left;
+      padding: 0 20px;
+    }
+
+    .intro-close-btn {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .intro-close-btn:hover {
+      background: #ff5577;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(233, 69, 96, 0.8);
+    }
+
+    .intro-hint {
+      color: #888;
+      font-size: 14px;
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
   <div id="gameContainer">
     <!-- Phaser will inject canvas here -->
   </div>
+
+  <!-- Enemy Introduction Modal -->
+  <div id="enemyIntroModal">
+    <div class="intro-content">
+      <div class="intro-title">Nowy Przeciwnik!</div>
+      <div class="intro-subtitle">Wykryto nowy typ wroga</div>
+      <div id="enemyPreviewPhaser"></div>
+      <div class="enemy-name" id="enemyName">-</div>
+      <div class="enemy-description" id="enemyDescription">-</div>
+      <button class="intro-close-btn" id="closeIntroBtn">Gotowy do walki!</button>
+      <div class="intro-hint">Naciśnij ENTER lub kliknij przycisk</div>
+    </div>
+  </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
