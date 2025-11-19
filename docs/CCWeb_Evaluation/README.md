@@ -77,6 +77,23 @@ Podoba się praca w CC Web w przeglądarce
 - Friction point: Ręczne kopiowanie informacji między narzędziami zmniejsza efektywność
 - Feature request: Jeśli CC Web mogło by czytać GitHub, mogło by automatycznie naprawiać wszystkie błędy zgłaszane przez CC gh action
 
+### 10. Full Agent Automation: Speed vs Control Trade-off
+
+(±) Workflow na totalnym automacie (pośredniczenie między agentami → tworzenie wymagań → requesty → review → CC Web fixes) jest mega szybki i działa, ale powoduje stres i niepewność.
+
+**Plusy:**
+- Prędkość jest bardzo wysoka
+- Workflow faktycznie działa
+- Automatyzacja całego cyklu development → review → fix
+
+**Minusy:**
+- Brak poczucia kontroli nad procesem
+- Nie do końca rozumiem jak budowane jest rozwiązanie
+- Stres i niepewność wynikające z braku transparentności procesu
+- **Potrzeba zwolnienia** - może trzeba będzie świadomie spowolnić workflow dla lepszego zrozumienia
+
+**Impact:** Trade-off między prędkością a zrozumieniem/kontrolą. Szybkie iteracje kosztem cognitive clarity.
+
 ## Limitations & Issues (-)
 
 ### 1. No File Mentions / Slash Commands
