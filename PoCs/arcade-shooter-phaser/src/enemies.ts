@@ -19,6 +19,8 @@ export enum EnemyType {
   PURPLE = 'PURPLE',
   /** Heavy enemy: slow movement, 5 HP with health bar, unlocks at 20s */
   TANK = 'TANK',
+  /** Teleporting enemy: homing shots, unlocks at 30s */
+  TELEPORT = 'TELEPORT',
 }
 
 /**
@@ -38,6 +40,8 @@ export interface Enemy extends GameObject {
   hp: number;
   /** Maximum hit points for this enemy (used for HP bar rendering) */
   maxHp: number;
+  /** Timestamp of last teleport (ms), used for TELEPORT enemy teleport cooldown */
+  lastTeleport?: number;
 }
 
 /**
@@ -45,6 +49,10 @@ export interface Enemy extends GameObject {
  * Defines all visual and behavioral characteristics.
  */
 export interface EnemyProperties {
+  /** Display name for UI */
+  name: string;
+  /** Short description for UI */
+  description: string;
   /** Enemy size in pixels (square bounding box) */
   size: number;
   /** Vertical movement speed in pixels per frame */
@@ -72,6 +80,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
   switch (type) {
     case EnemyType.STANDARD:
       return {
+        name: 'Standard',
+        description: 'red, bouncing',
         size: 30,
         speed: 2,
         horizontalSpeed: 2,
@@ -84,6 +94,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
 
     case EnemyType.YELLOW:
       return {
+        name: 'Yellow',
+        description: 'large, triple-shot',
         size: 60, // 2x bigger
         speed: 1.5,
         horizontalSpeed: 2,
@@ -96,6 +108,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
 
     case EnemyType.PURPLE:
       return {
+        name: 'Purple',
+        description: 'fast tracker',
         size: 15, // small sneaky
         speed: 3,
         horizontalSpeed: 4,
@@ -108,6 +122,8 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
 
     case EnemyType.TANK:
       return {
+        name: 'Tank',
+        description: 'heavy, 5 HP',
         size: 90, // 3x bigger
         speed: 0.8,
         horizontalSpeed: 1,
@@ -116,6 +132,20 @@ export function getEnemyProperties(type: EnemyType): EnemyProperties {
         canShoot: true,
         hp: 5,
         points: 50,
+      };
+
+    case EnemyType.TELEPORT:
+      return {
+        name: 'Teleport',
+        description: 'teleporting, homing shots',
+        size: 25, // slightly smaller than player
+        speed: 0.3, // very slow between teleports
+        horizontalSpeed: 0,
+        color: '#ff00ff', // magenta (will change dynamically)
+        shootInterval: 1500,
+        canShoot: true,
+        hp: 1,
+        points: 30,
       };
   }
 }
@@ -139,7 +169,7 @@ export function createEnemy(
   const props = getEnemyProperties(type);
   const vx = (Math.random() - 0.5) * 2 * props.horizontalSpeed;
 
-  return {
+  const enemy: Enemy = {
     type,
     x,
     y,
@@ -151,6 +181,13 @@ export function createEnemy(
     hp: props.hp,
     maxHp: props.hp,
   };
+
+  // Initialize lastTeleport for TELEPORT enemy
+  if (type === EnemyType.TELEPORT) {
+    enemy.lastTeleport = now;
+  }
+
+  return enemy;
 }
 
 /**
@@ -162,13 +199,16 @@ export function createEnemy(
  * - YELLOW: Bi-directional vertical (1% chance to reverse) + horizontal bounce
  * - PURPLE: Tracks player's horizontal position, constant downward speed
  * - TANK: Same as STANDARD but with slower speed values
+ * - TELEPORT: Teleports every second, shoots homing shots
  *
  * @param enemy - The enemy to update (mutated in place)
  * @param playerX - Current player X position for tracking behavior
  * @param playerY - Current player Y position (unused currently)
  * @param playerWidth - Player width for centering calculations
  * @param canvasWidth - Canvas width for boundary checks
+ * @param canvasHeight - Canvas height for boundary checks
  * @param gameSpeed - Global game speed multiplier (< 1 to slow down, > 1 to speed up)
+ * @param now - Current timestamp for teleport cooldown
  */
 export function updateEnemyMovement(
   enemy: Enemy,
@@ -176,7 +216,9 @@ export function updateEnemyMovement(
   playerY: number,
   playerWidth: number,
   canvasWidth: number,
-  gameSpeed: number
+  canvasHeight: number,
+  gameSpeed: number,
+  now?: number
 ): void {
   const props = getEnemyProperties(enemy.type);
 
@@ -243,6 +285,28 @@ export function updateEnemyMovement(
         enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
       }
       break;
+
+    case EnemyType.TELEPORT:
+      // Teleport every second to lower Y position with random X
+      if (now && enemy.lastTeleport && now - enemy.lastTeleport >= 1000) {
+        // Teleport: jump down 100-150px and to random X
+        const teleportDistance = 100 + Math.random() * 50;
+        const newY = enemy.y + teleportDistance;
+
+        // Only teleport if it won't go off-screen
+        if (newY < canvasHeight - enemy.height) {
+          enemy.y = newY;
+          enemy.x = Math.random() * (canvasWidth - enemy.width);
+        }
+        enemy.lastTeleport = now;
+      }
+
+      // Between teleports, move down very slowly
+      enemy.y += props.speed;
+
+      // Keep in bounds horizontally
+      enemy.x = Math.max(0, Math.min(enemy.x, canvasWidth - enemy.width));
+      break;
   }
 }
 
@@ -255,6 +319,7 @@ export function updateEnemyMovement(
  * - YELLOW: Unlocks at 10 seconds
  * - PURPLE: Unlocks at 20 seconds
  * - TANK: Unlocks at 20 seconds
+ * - TELEPORT: Unlocks at 30 seconds
  *
  * @param type - Enemy type to check
  * @param gameTime - Milliseconds elapsed since game start
@@ -270,6 +335,8 @@ export function isEnemyTypeUnlocked(type: EnemyType, gameTime: number): boolean 
       return gameTime >= 20000; // 20 seconds
     case EnemyType.TANK:
       return gameTime >= 20000; // 20 seconds
+    case EnemyType.TELEPORT:
+      return gameTime >= 30000; // 30 seconds
   }
 }
 

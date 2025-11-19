@@ -36,7 +36,7 @@ describe('Enemy Movement - Boundary Fixes', () => {
     const enemy = createEnemy(EnemyType.YELLOW, 100, -10, 0);
     enemy.vy = -1.5; // moving upward
 
-    updateEnemyMovement(enemy, 200, 400, 30, 400, 1.0);
+    updateEnemyMovement(enemy, 200, 400, 30, 400, 850, 1.0);
 
     expect(enemy.vy).toBeGreaterThan(0); // Should be forced downward
   });
@@ -47,7 +47,7 @@ describe('Enemy Movement - Boundary Fixes', () => {
     const playerWidth = 50; // Different from hardcoded 30
     const initialX = enemy.x;
 
-    updateEnemyMovement(enemy, playerX, 400, playerWidth, 400, 1.0);
+    updateEnemyMovement(enemy, playerX, 400, playerWidth, 400, 850, 1.0);
 
     // Enemy should move toward playerX + playerWidth/2 = 225
     expect(enemy.x).toBeGreaterThan(initialX);

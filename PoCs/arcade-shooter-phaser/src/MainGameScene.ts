@@ -160,6 +160,14 @@ export class MainGameScene extends Phaser.Scene {
     });
 
     // Setup collisions (will be implemented as enemies are created)
+
+    // Handle scene shutdown - show test panel again for restart
+    this.events.once('shutdown', () => {
+      const testPanel = document.getElementById('testPanel');
+      if (testPanel) {
+        testPanel.classList.remove('hidden');
+      }
+    });
   }
 
   /**
@@ -243,7 +251,9 @@ export class MainGameScene extends Phaser.Scene {
         this.player!.y,
         CONFIG.PLAYER_SIZE,
         this.scale.width,
-        CONFIG.GAME_SPEED
+        this.scale.height,
+        CONFIG.GAME_SPEED,
+        now
       );
 
       // Update sprite position
