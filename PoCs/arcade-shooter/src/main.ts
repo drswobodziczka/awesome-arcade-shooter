@@ -9,6 +9,7 @@ import { GameObject, checkCollision } from './utils';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties } from './enemies';
 import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers } from './spawning';
 import { Bullet, draw as renderGame, drawGameOver as renderGameOver } from './rendering';
+import { showEnemyIntroduction, isFirstEncounter, markAsEncountered } from './enemyIntro';
 
 /**
  * Global game configuration constants.
@@ -54,6 +55,8 @@ const game = {
   score: 0,
   /** Game over flag - when true, game loop stops and overlay shows */
   gameOver: false,
+  /** Game paused flag - pauses update loop during enemy introductions */
+  gamePaused: false,
   /** Game start timestamp in milliseconds (for calculating gameTime) */
   gameStartTime: 0,
   /** Game mode: 'normal' for progressive spawning, 'test' for custom enemy selection */
@@ -95,6 +98,8 @@ const game = {
   } as SpawnTimers,
   /** Last player shot timestamp for fire rate limiting */
   lastPlayerShot: 0,
+  /** Set of enemy types that have been encountered (for introduction modal) */
+  encounteredEnemies: new Set<EnemyType>(),
 };
 
 /**
@@ -272,6 +277,7 @@ function startGame() {
 /**
  * Main game loop using requestAnimationFrame for 60 FPS.
  * Exits to game over screen when game.gameOver is true.
+ * Skips update when gamePaused is true (during enemy introductions).
  * Otherwise calls update() and render() each frame.
  */
 function gameLoop() {
@@ -283,7 +289,9 @@ function gameLoop() {
     return;
   }
 
-  update();
+  if (!game.gamePaused) {
+    update();
+  }
   render();
   requestAnimationFrame(gameLoop);
 }
@@ -352,6 +360,18 @@ function update() {
       enabledEnemies: game.testConfig.enabledEnemies,
       spawnInterval: CONFIG.TEST_MODE_SPAWN_INTERVAL,
     });
+  }
+
+  // Check for first encounters and show introduction modal
+  for (const enemy of game.enemies) {
+    if (isFirstEncounter(enemy.type, game.encounteredEnemies)) {
+      markAsEncountered(enemy.type, game.encounteredEnemies);
+      game.gamePaused = true;
+      showEnemyIntroduction(enemy.type, () => {
+        game.gamePaused = false;
+      });
+      break; // Only show one introduction at a time
+    }
   }
 
   // Update bullets
