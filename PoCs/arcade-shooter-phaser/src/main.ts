@@ -61,7 +61,7 @@ let game: Phaser.Game | null = null;
 function showTestPanelError(message: string) {
   const testPanel = document.getElementById('testPanel')!;
   const errorDiv = document.createElement('div');
-  errorDiv.id = 'testPanelError';
+  errorDiv.className = 'test-panel-error';
   errorDiv.style.cssText = 'color: #ff6b6b; margin-top: 10px; font-size: 14px; font-weight: bold;';
   errorDiv.textContent = message;
   testPanel.appendChild(errorDiv);
@@ -132,9 +132,8 @@ function setupTestPanel() {
 
   // Start button handler
   startButton.addEventListener('click', () => {
-    // Clear any previous error messages
-    const existingError = document.getElementById('testPanelError');
-    if (existingError) existingError.remove();
+    // Clear ALL previous error messages
+    document.querySelectorAll('.test-panel-error').forEach(e => e.remove());
 
     // Get selected mode
     const selectedMode = document.querySelector<HTMLInputElement>('input[name="gameMode"]:checked')!.value as 'normal' | 'test';
@@ -180,11 +179,13 @@ function setupTestPanel() {
     game.registry.set('gameMode', selectedMode);
     game.registry.set('enabledEnemies', enabledEnemies);
 
-    // Enable canvas
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-      canvas.classList.remove('disabled');
-    }
+    // Enable canvas once Phaser is ready
+    game.events.once('ready', () => {
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        canvas.classList.remove('disabled');
+      }
+    });
   });
 }
 

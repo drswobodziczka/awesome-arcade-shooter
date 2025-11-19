@@ -19,7 +19,8 @@ export interface SpawnTimers {
   lastPurpleSpawn: number;
   /** Last time a TANK enemy spawned (ms timestamp) */
   lastTankSpawn: number;
-  lastTeleportSpawn?: number;
+  /** Last time an enemy spawned in test mode (ms timestamp) */
+  lastTestSpawn?: number;
 }
 
 /**
@@ -115,10 +116,10 @@ export function spawnEnemies(
 /**
  * Test mode spawning function that spawns random enemies from the enabled list.
  * Spawns enemies at a fixed interval, randomly selecting from enabled types.
- * Uses lastStandardSpawn timer as a shared cooldown for all spawns.
+ * Uses dedicated lastTestSpawn timer to avoid interference with normal mode.
  *
  * @param enemies - Game's enemy array (mutated by pushing new enemies)
- * @param timers - Spawn timer state (uses lastStandardSpawn for test mode cooldown)
+ * @param timers - Spawn timer state (uses lastTestSpawn for test mode cooldown)
  * @param now - Current timestamp in milliseconds
  * @param config - Test mode spawn configuration with enabled enemies and interval
  */
@@ -128,8 +129,13 @@ export function spawnEnemiesTestMode(
   now: number,
   config: TestModeSpawnConfig
 ): void {
-  // Use lastStandardSpawn as the shared timer for test mode
-  if (now - timers.lastStandardSpawn > config.spawnInterval) {
+  // Initialize lastTestSpawn if undefined
+  if (timers.lastTestSpawn === undefined) {
+    timers.lastTestSpawn = 0;
+  }
+
+  // Use dedicated lastTestSpawn timer for test mode
+  if (now - timers.lastTestSpawn > config.spawnInterval) {
     if (config.enabledEnemies.length === 0) return;
 
     // Pick a random enemy type from enabled list
@@ -138,6 +144,6 @@ export function spawnEnemiesTestMode(
     const x = Math.random() * (config.canvasWidth - props.size);
 
     enemies.push(createEnemy(randomType, x, -props.size, now));
-    timers.lastStandardSpawn = now;
+    timers.lastTestSpawn = now;
   }
 }
