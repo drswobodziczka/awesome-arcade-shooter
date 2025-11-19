@@ -415,5 +415,11 @@ export function getEnemyMetadata(type: EnemyType): EnemyMetadata {
         name: 'Opancerzony Czołg',
         description: 'Masywny i powolny, ale niezwykle wytrzymały. Posiada 5 punktów życia - potrzeba wielu trafień, by go zniszczyć.',
       };
+
+    case EnemyType.TELEPORT:
+      return {
+        name: 'Teleporter',
+        description: 'Tajemniczy przeciwnik potrafiący teleportować się w niższe pozycje co sekundę. Strzela naprowadzanymi pociskami!',
+      };
   }
 }
