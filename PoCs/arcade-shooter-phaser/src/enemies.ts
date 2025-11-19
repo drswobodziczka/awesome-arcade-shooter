@@ -19,7 +19,7 @@ export enum EnemyType {
   PURPLE = 'PURPLE',
   /** Heavy enemy: slow movement, 5 HP with health bar, unlocks at 20s */
   TANK = 'TANK',
-  /** Teleporting enemy: homing shots, unlocks at 30s */
+  /** Teleporting enemy: teleports every 1s to random lower position, homing shots, unlocks at 30s */
   TELEPORT = 'TELEPORT',
 }
 
