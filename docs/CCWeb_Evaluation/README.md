@@ -200,3 +200,13 @@ Nie wiadomo jak działa na Androidzie
 - Brak zapamiętywania wybranego repo między oknami
 - Wymaga ręcznego resetowania wyboru za każdym razem
 - Uciążliwe przy pracy z wieloma projektami/modelami
+
+### 13. Cannot Test Running Instances During Active Development
+
+(-) W trybie aktywnego rozwijania gałęzi nie możemy odpalić serwera, otworzyć przeglądarki i pozwolić agentowi samodzielnie testować aplikację.
+
+- Agent nie ma możliwości interaktywnego testowania w przeglądarce
+- Niemożność spawania i obserwacji działającej instancji aplikacji
+- Ogranicza feedback loop podczas development - agent nie widzi wyników swoich zmian w runtime
+- Wymaga ręcznego testowania przez użytkownika lub instrukcji user-provided o błędach/wynikach
+- Utrudnia debugging i iteracyjne poprawianie kodu
