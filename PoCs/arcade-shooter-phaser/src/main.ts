@@ -79,28 +79,6 @@ function setupTestPanel() {
   Object.values(EnemyType).forEach((enemyType, index) => {
     const props = getEnemyProperties(enemyType);
 
-    // Generate friendly name and description
-    let name = '';
-    let description = '';
-    switch (enemyType) {
-      case EnemyType.STANDARD:
-        name = 'Standard';
-        description = 'Basic enemy';
-        break;
-      case EnemyType.YELLOW:
-        name = 'Yellow';
-        description = 'Triple-shot';
-        break;
-      case EnemyType.PURPLE:
-        name = 'Purple';
-        description = 'Fast tracker';
-        break;
-      case EnemyType.TANK:
-        name = 'Tank';
-        description = '5 HP heavy';
-        break;
-    }
-
     const wrapper = document.createElement('div');
     wrapper.className = 'enemy-checkbox';
 
@@ -112,7 +90,7 @@ function setupTestPanel() {
 
     const label = document.createElement('label');
     label.htmlFor = checkbox.id;
-    label.textContent = `${name} (${description})`;
+    label.textContent = `${props.name} (${props.description})`;
 
     wrapper.appendChild(checkbox);
     wrapper.appendChild(label);
