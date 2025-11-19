@@ -14,7 +14,7 @@ import { spawnEnemies, SpawnTimers } from './spawning';
 const CONFIG = {
   PLAYER_SPEED: 5,
   PLAYER_SIZE: 30,
-  GAME_SPEED: 0.5,
+  GAME_SPEED: 0.8,
   SHOOT_INTERVAL: 200,
   BULLET_SPEED: 7,
   BULLET_SIZE: 5,
@@ -70,7 +70,7 @@ export class MainGameScene extends Phaser.Scene {
    */
   preload(): void {
     // Create particle textures programmatically
-    const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+    const graphics = this.make.graphics({ x: 0, y: 0 });
 
     // Explosion particle (small square)
     graphics.fillStyle(0xffffff);
@@ -87,6 +87,20 @@ export class MainGameScene extends Phaser.Scene {
    * Called after preload() - create game objects.
    */
   create(): void {
+    // Reset game state
+    this.score = 0;
+    this.enemies = [];
+    this.enemyBullets = [];
+    this.gameOver = false;
+    this.gameOverShown = false;
+    this.lastPlayerShot = 0;
+    this.spawnTimers = {
+      lastStandardSpawn: 0,
+      lastYellowSpawn: 0,
+      lastPurpleSpawn: 0,
+      lastTankSpawn: 0,
+    };
+
     // Initialize game start time
     this.gameStartTime = Date.now();
 
@@ -425,9 +439,11 @@ export class MainGameScene extends Phaser.Scene {
    * Creates retro arcade-style sound effects for shoot, hit, and explosion.
    */
   private generateAudioAssets(): void {
-    if (!this.sound || !this.sound.context) return;
+    if (!this.sound) return;
+    const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
+    if (!soundManager.context) return;
 
-    const audioContext = this.sound.context;
+    const audioContext = soundManager.context;
     const sampleRate = audioContext.sampleRate;
 
     // Shoot sound - short laser pew (0.1s)
@@ -468,9 +484,12 @@ export class MainGameScene extends Phaser.Scene {
    */
   private playSynthSound(key: string, volume: number = 1.0): void {
     const buffer = this.audioBuffers.get(key);
-    if (!buffer || !this.sound || !this.sound.context) return;
+    if (!buffer || !this.sound) return;
 
-    const audioContext = this.sound.context;
+    const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
+    if (!soundManager.context) return;
+
+    const audioContext = soundManager.context;
     const source = audioContext.createBufferSource();
     const gainNode = audioContext.createGain();
 
@@ -490,13 +509,16 @@ export class MainGameScene extends Phaser.Scene {
    * @param sprite - The sprite to flash
    */
   private createHitFlash(sprite: Phaser.GameObjects.Triangle): void {
-    // Tint sprite white
-    sprite.setTint(0xffffff);
+    // Store original color
+    const originalColor = sprite.fillColor;
 
-    // Reset tint after 50ms
+    // Flash white
+    sprite.setFillStyle(0xffffff);
+
+    // Reset color after 50ms
     this.time.delayedCall(50, () => {
       if (sprite.active) {
-        sprite.clearTint();
+        sprite.setFillStyle(originalColor);
       }
     });
   }
@@ -516,7 +538,7 @@ export class MainGameScene extends Phaser.Scene {
       tint: 0xffff00, // Yellow sparks
       lifespan: 200,
       quantity: 5,
-      blendMode: 'ADD',
+      blendMode: Phaser.BlendModes.ADD,
     });
 
     // Auto-destroy emitter
@@ -545,7 +567,7 @@ export class MainGameScene extends Phaser.Scene {
       tint: color,
       lifespan: 500,
       quantity: enemyType === EnemyType.TANK ? 30 : 15, // More particles for TANK
-      blendMode: 'ADD',
+      blendMode: Phaser.BlendModes.ADD,
     });
 
     // Auto-destroy emitter after effect completes

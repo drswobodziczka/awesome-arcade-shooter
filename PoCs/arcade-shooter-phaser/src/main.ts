@@ -4,6 +4,25 @@
  * Entry point for the arcade shooter - sets up Phaser instance with MainGameScene.
  */
 
+// Global error handler for debugging on screen
+window.onerror = (msg, url, lineNo, columnNo, error) => {
+  const errorContainer = document.createElement('div');
+  errorContainer.style.position = 'fixed';
+  errorContainer.style.top = '0';
+  errorContainer.style.left = '0';
+  errorContainer.style.width = '100%';
+  errorContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.9)';
+  errorContainer.style.color = 'white';
+  errorContainer.style.padding = '20px';
+  errorContainer.style.zIndex = '10000';
+  errorContainer.style.fontFamily = 'monospace';
+  errorContainer.style.whiteSpace = 'pre-wrap';
+  errorContainer.innerText = `RUNTIME ERROR:\n${msg}\nLine: ${lineNo}\nURL: ${url}\nStack: ${error?.stack || 'N/A'}`;
+  document.body.appendChild(errorContainer);
+  console.error('CAUGHT ERROR:', error);
+  return false;
+};
+
 import Phaser from 'phaser';
 import { MainGameScene } from './MainGameScene';
 
