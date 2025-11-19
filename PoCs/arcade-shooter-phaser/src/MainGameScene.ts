@@ -7,6 +7,7 @@
 import Phaser from 'phaser';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties, createEnemy } from './enemies';
 import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers } from './spawning';
+import { showEnemyIntroduction, isFirstEncounter, markAsEncountered } from './enemyIntro';
 
 /**
  * Game configuration constants.
@@ -60,6 +61,12 @@ export class MainGameScene extends Phaser.Scene {
   private gameOverShown: boolean = false;
   /** Audio buffers for synth sounds */
   private audioBuffers: Map<string, AudioBuffer> = new Map();
+  /** Set of encountered enemy types for first-time introductions */
+  private encounteredEnemies: Set<EnemyType> = new Set();
+  /** Game paused flag (used when showing enemy introduction modal) */
+  private gamePaused: boolean = false;
+  /** Flag to prevent showing multiple enemy introduction modals at once */
+  private isShowingIntroModal: boolean = false;
   /** Game mode: 'normal' for progressive spawning, 'test' for custom enemy selection */
   private gameMode: 'normal' | 'test' = 'normal';
   /** Test mode configuration: which enemy types to spawn */
@@ -103,6 +110,9 @@ export class MainGameScene extends Phaser.Scene {
     this.gameOver = false;
     this.gameOverShown = false;
     this.lastPlayerShot = 0;
+    this.gamePaused = false;
+    this.isShowingIntroModal = false;
+    this.encounteredEnemies.clear();
     this.spawnTimers = {
       lastStandardSpawn: 0,
       lastYellowSpawn: 0,
@@ -169,6 +179,11 @@ export class MainGameScene extends Phaser.Scene {
   update(): void {
     if (!this.player || !this.cursors || !this.bullets) return;
 
+    // Handle game pause (e.g., during enemy introduction modal)
+    if (this.gamePaused) {
+      return;
+    }
+
     // Handle game over
     if (this.gameOver) {
       if (!this.gameOverShown) {
@@ -232,6 +247,23 @@ export class MainGameScene extends Phaser.Scene {
         parseInt(props.color.replace('#', ''), 16)
       );
       this.enemies.push({ ...enemy, sprite });
+    }
+
+    // Check for first encounters in newly spawned enemies only (optimization)
+    // Only show modal if not already showing one (prevent race condition)
+    if (!this.isShowingIntroModal && newEnemies.length > 0) {
+      for (const enemy of newEnemies) {
+        if (isFirstEncounter(enemy.type, this.encounteredEnemies)) {
+          markAsEncountered(enemy.type, this.encounteredEnemies);
+          this.gamePaused = true;
+          this.isShowingIntroModal = true;
+          showEnemyIntroduction(this, enemy.type, () => {
+            this.gamePaused = false;
+            this.isShowingIntroModal = false;
+          });
+          break; // Only show one introduction at a time
+        }
+      }
     }
 
     // Update enemy movement and shooting
