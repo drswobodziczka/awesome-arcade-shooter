@@ -32,8 +32,8 @@ import { MainGameScene } from './MainGameScene';
  */
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO, // WebGL with Canvas fallback
-  width: 600,
-  height: 900,
+  width: 550,
+  height: 850,
   parent: 'gameContainer', // HTML container ID
   backgroundColor: '#16213e',
   physics: {
