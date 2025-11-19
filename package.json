@@ -1,28 +1,24 @@
 {
   "name": "awesome-arcade-shooter",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "description": "Collection of arcade game projects",
+  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "install:arcade-shooter": "cd PoCs/arcade-shooter && npm install",
+    "dev": "npm run arcade-shooter:dev",
+    "build": "npm run arcade-shooter:build",
+    "test": "npm run arcade-shooter:test",
+    "arcade-shooter:dev": "cd PoCs/arcade-shooter && npm run dev",
+    "arcade-shooter:build": "cd PoCs/arcade-shooter && npm run build",
+    "arcade-shooter:preview": "cd PoCs/arcade-shooter && npm run preview",
+    "arcade-shooter:test": "cd PoCs/arcade-shooter && npm run test",
+    "arcade-shooter:test:watch": "cd PoCs/arcade-shooter && npm run test:watch"
   },
   "repository": {
     "type": "git",
     "url": "http://local_proxy@127.0.0.1:36629/git/drswobodziczka/awesome-arcade-shooter"
   },
-  "keywords": [],
+  "keywords": ["arcade", "games"],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^7.2.2",
-    "vitest": "^4.0.9"
-  }
+  "license": "ISC"
 }

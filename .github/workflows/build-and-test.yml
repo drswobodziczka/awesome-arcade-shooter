@@ -22,12 +22,16 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache-dependency-path: 'PoCs/arcade-shooter/package-lock.json'
 
     - name: Install dependencies
+      working-directory: ./PoCs/arcade-shooter
       run: npm ci
 
     - name: Build project
+      working-directory: ./PoCs/arcade-shooter
       run: npm run build
 
     - name: Run tests
+      working-directory: ./PoCs/arcade-shooter
       run: npm test
