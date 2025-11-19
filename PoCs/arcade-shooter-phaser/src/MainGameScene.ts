@@ -6,7 +6,7 @@
 
 import Phaser from 'phaser';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties, createEnemy } from './enemies';
-import { spawnEnemies, SpawnTimers } from './spawning';
+import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers } from './spawning';
 
 /**
  * Game configuration constants.
@@ -21,6 +21,7 @@ const CONFIG = {
   ENEMY_BULLET_SPEED_MULT: 0.7,
   STANDARD_ENEMY_SPAWN_INTERVAL: 1000,
   SPECIAL_ENEMY_SPAWN_INTERVAL: 4500,
+  TEST_MODE_SPAWN_INTERVAL: 1500,
 };
 
 /**
@@ -59,6 +60,10 @@ export class MainGameScene extends Phaser.Scene {
   private gameOverShown: boolean = false;
   /** Audio buffers for synth sounds */
   private audioBuffers: Map<string, AudioBuffer> = new Map();
+  /** Game mode: 'normal' for progressive spawning, 'test' for custom enemy selection */
+  private gameMode: 'normal' | 'test' = 'normal';
+  /** Test mode configuration: which enemy types to spawn */
+  private enabledEnemies: EnemyType[] = [EnemyType.STANDARD];
 
   constructor() {
     super({ key: 'MainGameScene' });
@@ -87,6 +92,10 @@ export class MainGameScene extends Phaser.Scene {
    * Called after preload() - create game objects.
    */
   create(): void {
+    // Get game configuration from registry (set by main.ts)
+    this.gameMode = this.registry.get('gameMode') || 'normal';
+    this.enabledEnemies = this.registry.get('enabledEnemies') || [EnemyType.STANDARD];
+
     // Reset game state
     this.score = 0;
     this.enemies = [];
@@ -194,13 +203,22 @@ export class MainGameScene extends Phaser.Scene {
       this.lastPlayerShot = now;
     }
 
-    // Spawn enemies into temporary array
+    // Spawn enemies into temporary array based on game mode
     const newEnemies: Enemy[] = [];
-    spawnEnemies(newEnemies, this.spawnTimers, gameTime, now, {
-      canvasWidth: this.scale.width,
-      standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
-      specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
-    });
+    if (this.gameMode === 'normal') {
+      spawnEnemies(newEnemies, this.spawnTimers, gameTime, now, {
+        canvasWidth: this.scale.width,
+        standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
+        specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
+      });
+    } else {
+      // Test mode: spawn random enemies from enabled list
+      spawnEnemiesTestMode(newEnemies, this.spawnTimers, now, {
+        canvasWidth: this.scale.width,
+        enabledEnemies: this.enabledEnemies,
+        spawnInterval: CONFIG.TEST_MODE_SPAWN_INTERVAL,
+      });
+    }
 
     // Create sprites for newly spawned enemies
     for (const enemy of newEnemies) {

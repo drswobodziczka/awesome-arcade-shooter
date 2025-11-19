@@ -25,6 +25,7 @@ window.onerror = (msg, url, lineNo, columnNo, error) => {
 
 import Phaser from 'phaser';
 import { MainGameScene } from './MainGameScene';
+import { EnemyType, getEnemyProperties } from './enemies';
 
 /**
  * Phaser game configuration.
@@ -48,9 +49,147 @@ const config: Phaser.Types.Core.GameConfig = {
 
 /**
  * Initialize Phaser game instance.
- * Creates game on page load.
+ * Game will not start automatically - waits for start button click.
  */
-const game = new Phaser.Game(config);
+let game: Phaser.Game | null = null;
+
+/**
+ * Displays an inline error message in the test panel.
+ *
+ * @param message - Error message to display
+ */
+function showTestPanelError(message: string) {
+  const testPanel = document.getElementById('testPanel')!;
+  const errorDiv = document.createElement('div');
+  errorDiv.id = 'testPanelError';
+  errorDiv.style.cssText = 'color: #ff6b6b; margin-top: 10px; font-size: 14px; font-weight: bold;';
+  errorDiv.textContent = message;
+  testPanel.appendChild(errorDiv);
+}
+
+/**
+ * Sets up the test panel event handlers for mode selection and enemy checkboxes.
+ */
+function setupTestPanel() {
+  const modeRadios = document.querySelectorAll<HTMLInputElement>('input[name="gameMode"]');
+  const enemySelection = document.getElementById('enemySelection')!;
+  const startButton = document.getElementById('startButton')!;
+
+  // Dynamically generate enemy checkboxes from EnemyType enum
+  Object.values(EnemyType).forEach((enemyType, index) => {
+    const props = getEnemyProperties(enemyType);
+
+    // Generate friendly name and description
+    let name = '';
+    let description = '';
+    switch (enemyType) {
+      case EnemyType.STANDARD:
+        name = 'Standard';
+        description = 'Basic enemy';
+        break;
+      case EnemyType.YELLOW:
+        name = 'Yellow';
+        description = 'Triple-shot';
+        break;
+      case EnemyType.PURPLE:
+        name = 'Purple';
+        description = 'Fast tracker';
+        break;
+      case EnemyType.TANK:
+        name = 'Tank';
+        description = '5 HP heavy';
+        break;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'enemy-checkbox';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `enemy-${enemyType.toLowerCase()}`;
+    checkbox.value = enemyType;
+    checkbox.checked = index === 0; // Check first enemy by default
+
+    const label = document.createElement('label');
+    label.htmlFor = checkbox.id;
+    label.textContent = `${name} (${description})`;
+
+    wrapper.appendChild(checkbox);
+    wrapper.appendChild(label);
+    enemySelection.appendChild(wrapper);
+  });
+
+  // Show/hide enemy selection based on mode
+  modeRadios.forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (radio.value === 'test') {
+        enemySelection.classList.remove('hidden');
+      } else {
+        enemySelection.classList.add('hidden');
+      }
+    });
+  });
+
+  // Start button handler
+  startButton.addEventListener('click', () => {
+    // Clear any previous error messages
+    const existingError = document.getElementById('testPanelError');
+    if (existingError) existingError.remove();
+
+    // Get selected mode
+    const selectedMode = document.querySelector<HTMLInputElement>('input[name="gameMode"]:checked')!.value as 'normal' | 'test';
+
+    // If test mode, get selected enemies
+    let enabledEnemies: EnemyType[] = [];
+    if (selectedMode === 'test') {
+      const checkedBoxes = Array.from(
+        document.querySelectorAll<HTMLInputElement>('#enemySelection input[type="checkbox"]:checked')
+      );
+
+      if (checkedBoxes.length === 0) {
+        showTestPanelError('Please select at least one enemy type for test mode!');
+        return;
+      }
+
+      // Validate and map checkbox values to EnemyType enum
+      for (const cb of checkedBoxes) {
+        const value = cb.value;
+        if (!Object.values(EnemyType).includes(value as EnemyType)) {
+          showTestPanelError(`Invalid enemy type: ${value}`);
+          return;
+        }
+        enabledEnemies.push(value as EnemyType);
+      }
+    }
+
+    // Hide test panel
+    const testPanel = document.getElementById('testPanel')!;
+    testPanel.classList.add('hidden');
+
+    // Update controls text
+    const controlsEl = document.getElementById('controls');
+    if (controlsEl) {
+      controlsEl.style.opacity = '1';
+      controlsEl.innerHTML = 'Arrow keys: Move | Space: Shoot';
+    }
+
+    // Initialize game with selected configuration
+    game = new Phaser.Game(config);
+
+    // Pass configuration to MainGameScene
+    game.registry.set('gameMode', selectedMode);
+    game.registry.set('enabledEnemies', enabledEnemies);
+
+    // Enable canvas
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      canvas.classList.remove('disabled');
+    }
+  });
+}
+
+// Set up test panel on page load
+setupTestPanel();
 
 // Export for testing purposes
 export { game, config };
