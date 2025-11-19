@@ -21,6 +21,11 @@
     canvas {
       border: 2px solid #0f3460;
       background: #16213e;
+      transition: opacity 0.3s;
+    }
+    canvas.disabled {
+      opacity: 0.3;
+      pointer-events: none;
     }
     #score {
       color: #e94560;
@@ -132,15 +137,88 @@
       color: #888;
       font-size: 14px;
       margin-top: 15px;
+    #testPanel {
+      background: #0f3460;
+      border: 2px solid #e94560;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+      color: #fff;
+      max-width: 400px;
+    }
+    #testPanel h3 {
+      margin: 0 0 10px 0;
+      color: #e94560;
+      font-size: 18px;
+    }
+    .enemy-checkbox {
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+    }
+    .enemy-checkbox input {
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    .enemy-checkbox label {
+      cursor: pointer;
+    }
+    .mode-selector {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e94560;
+    }
+    .mode-selector label {
+      display: block;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    #startButton {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    #startButton:hover {
+      background: #d63851;
+    }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div id="gameContainer">
     <div id="score">Score: 0</div>
-    <canvas id="gameCanvas" width="600" height="900"></canvas>
-    <div id="controls" style="color: #fff; margin-top: 10px;">
-      Arrow keys: Move | Space: Shoot
+    <canvas id="gameCanvas" class="disabled" width="400" height="600"></canvas>
+    <div id="controls" style="color: #fff; margin-top: 10px; opacity: 0.5;">
+      Arrow keys: Move | Space: Shoot | <span style="color: #e94560;">Configure game below to start</span>
+    </div>
+
+    <div id="testPanel">
+      <h3>Test Panel</h3>
+
+      <div class="mode-selector">
+        <label>
+          <input type="radio" name="gameMode" value="normal" checked>
+          Normal Mode (progressive spawning)
+        </label>
+        <label>
+          <input type="radio" name="gameMode" value="test">
+          Test Mode (spawn selected enemies immediately)
+        </label>
+      </div>
+
+      <div id="enemySelection" class="hidden">
+        <!-- Dynamically populated from EnemyType enum -->
+      </div>
+
+      <button id="startButton">Start Game</button>
     </div>
   </div>
 
