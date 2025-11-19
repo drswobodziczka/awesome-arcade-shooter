@@ -102,37 +102,55 @@ export function showEnemyIntroduction(
   // Clear previous preview
   previewContainer.innerHTML = '';
 
-  // Create a mini Phaser game for the preview
-  const previewConfig: Phaser.Types.Core.GameConfig = {
-    type: Phaser.AUTO,
-    width: 200,
-    height: 200,
-    parent: 'enemyPreviewPhaser',
-    backgroundColor: '#16213e',
-    scene: {
-      create: function(this: Phaser.Scene) {
-        const centerX = this.scale.width / 2;
-        const centerY = this.scale.height / 2;
-        drawEnemyPreview(this, type, centerX, centerY);
-      }
-    },
-  };
+  let previewGame: Phaser.Game | null = null;
 
-  const previewGame = new Phaser.Game(previewConfig);
+  // Create a mini Phaser game for the preview
+  try {
+    const previewConfig: Phaser.Types.Core.GameConfig = {
+      type: Phaser.AUTO,
+      width: 200,
+      height: 200,
+      parent: 'enemyPreviewPhaser',
+      backgroundColor: '#16213e',
+      scene: {
+        create: function(this: Phaser.Scene) {
+          const centerX = this.scale.width / 2;
+          const centerY = this.scale.height / 2;
+          drawEnemyPreview(this, type, centerX, centerY);
+        }
+      },
+    };
+
+    previewGame = new Phaser.Game(previewConfig);
+  } catch (error) {
+    console.error('Failed to create Phaser preview game:', error);
+    // Continue showing modal even if preview fails
+  }
 
   // Show modal
   modal.classList.add('visible');
 
-  // Close handlers
+  // Close handlers with proper cleanup
   const closeModal = () => {
-    modal.classList.remove('visible');
-    document.removeEventListener('keydown', keyHandler);
-    closeBtn.removeEventListener('click', closeModal);
+    try {
+      // Remove modal visibility
+      modal.classList.remove('visible');
 
-    // Destroy preview game
-    previewGame.destroy(true);
+      // Clean up event listeners
+      document.removeEventListener('keydown', keyHandler);
+      closeBtn.removeEventListener('click', closeModal);
 
-    onClose();
+      // Destroy preview game if it exists
+      if (previewGame) {
+        previewGame.destroy(true);
+        previewGame = null;
+      }
+    } catch (error) {
+      console.error('Error closing enemy introduction modal:', error);
+    } finally {
+      // Always call onClose to resume game, even if cleanup fails
+      onClose();
+    }
   };
 
   const keyHandler = (e: KeyboardEvent) => {
@@ -143,8 +161,14 @@ export function showEnemyIntroduction(
   };
 
   // Register close handlers
-  closeBtn.addEventListener('click', closeModal);
-  document.addEventListener('keydown', keyHandler);
+  try {
+    closeBtn.addEventListener('click', closeModal);
+    document.addEventListener('keydown', keyHandler);
+  } catch (error) {
+    console.error('Error registering event handlers:', error);
+    // If we can't register handlers, close immediately
+    closeModal();
+  }
 }
 
 /**

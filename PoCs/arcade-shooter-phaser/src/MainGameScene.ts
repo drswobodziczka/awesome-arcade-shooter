@@ -64,6 +64,8 @@ export class MainGameScene extends Phaser.Scene {
   private encounteredEnemies: Set<EnemyType> = new Set();
   /** Game paused flag (used when showing enemy introduction modal) */
   private gamePaused: boolean = false;
+  /** Flag to prevent showing multiple enemy introduction modals at once */
+  private isShowingIntroModal: boolean = false;
 
   constructor() {
     super({ key: 'MainGameScene' });
@@ -100,6 +102,7 @@ export class MainGameScene extends Phaser.Scene {
     this.gameOverShown = false;
     this.lastPlayerShot = 0;
     this.gamePaused = false;
+    this.isShowingIntroModal = false;
     this.encounteredEnemies.clear();
     this.spawnTimers = {
       lastStandardSpawn: 0,
@@ -228,15 +231,20 @@ export class MainGameScene extends Phaser.Scene {
       this.enemies.push({ ...enemy, sprite });
     }
 
-    // Check for first encounters and show introduction modal
-    for (const enemy of this.enemies) {
-      if (isFirstEncounter(enemy.type, this.encounteredEnemies)) {
-        markAsEncountered(enemy.type, this.encounteredEnemies);
-        this.gamePaused = true;
-        showEnemyIntroduction(this, enemy.type, () => {
-          this.gamePaused = false;
-        });
-        break; // Only show one introduction at a time
+    // Check for first encounters in newly spawned enemies only (optimization)
+    // Only show modal if not already showing one (prevent race condition)
+    if (!this.isShowingIntroModal && newEnemies.length > 0) {
+      for (const enemy of newEnemies) {
+        if (isFirstEncounter(enemy.type, this.encounteredEnemies)) {
+          markAsEncountered(enemy.type, this.encounteredEnemies);
+          this.gamePaused = true;
+          this.isShowingIntroModal = true;
+          showEnemyIntroduction(this, enemy.type, () => {
+            this.gamePaused = false;
+            this.isShowingIntroModal = false;
+          });
+          break; // Only show one introduction at a time
+        }
       }
     }
 
