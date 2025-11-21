@@ -17,7 +17,8 @@ export class GameOverScene extends Phaser.Scene {
 
   create(): void {
     // Get final score from registry (set by MainGameScene) - type-safe
-    const finalScore = (this.game.registry.get('finalScore') as GameRegistry['finalScore']) || 0;
+    // Use ?? instead of || to handle score=0 correctly
+    const finalScore = (this.game.registry.get('finalScore') as GameRegistry['finalScore']) ?? 0;
 
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;

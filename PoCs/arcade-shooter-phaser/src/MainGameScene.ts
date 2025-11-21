@@ -99,8 +99,9 @@ export class MainGameScene extends Phaser.Scene {
    */
   create(): void {
     // Get game configuration from registry (set by MenuScene) - type-safe
-    this.gameMode = (this.registry.get('gameMode') as GameRegistry['gameMode']) || 'normal';
-    this.enabledEnemies = (this.registry.get('enabledEnemies') as GameRegistry['enabledEnemies']) || [EnemyType.STANDARD];
+    // Use ?? for consistency with GameOverScene
+    this.gameMode = (this.registry.get('gameMode') as GameRegistry['gameMode']) ?? 'normal';
+    this.enabledEnemies = (this.registry.get('enabledEnemies') as GameRegistry['enabledEnemies']) ?? [EnemyType.STANDARD];
 
     // Reset game state
     this.score = 0;
