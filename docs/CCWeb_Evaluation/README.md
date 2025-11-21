@@ -103,6 +103,16 @@ Podoba się praca w CC Web w przeglądarce
 - Ułatwia workflow: issue → analiza → implementacja
 - Częściowo rozwiązuje problem z punktu 9 (Feature request o czytaniu GitHub)
 
+### 12. Predefined Hooks Support
+
+(+) CC Web ma wbudowaną obsługę predefined hooks - np. stop-hook-git-check.sh automatycznie wymusza commit zmian przed zatrzymaniem sesji.
+
+- Automatyczne governance i best practices
+- Uniemożliwia wyjście sesji z niezacommitowanymi zmianami
+- Elegancka automatyzacja bez konieczności konfiguracji - działa out-of-the-box
+- Zwiększa dyscyplinę developmentową
+- Potencjalnie pochodzi z sandbox environment - ciekawe czy to feature CC Web czy infrastruktury
+
 ## Limitations & Issues (-)
 
 ### 1. No File Mentions / Slash Commands
