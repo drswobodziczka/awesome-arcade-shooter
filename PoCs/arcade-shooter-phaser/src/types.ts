@@ -22,3 +22,19 @@ export interface GameRegistry {
  * Registry keys for type-safe access.
  */
 export type GameRegistryKey = keyof GameRegistry;
+
+/**
+ * Validates test mode configuration.
+ * @param mode - The selected game mode
+ * @param selectedEnemies - Set of selected enemy types
+ * @returns Error message if validation fails, null if valid
+ */
+export function validateTestModeConfig(
+  mode: 'normal' | 'test',
+  selectedEnemies: Set<EnemyType>
+): string | null {
+  if (mode === 'test' && selectedEnemies.size === 0) {
+    return '⚠️ Please select at least one enemy for test mode';
+  }
+  return null;
+}

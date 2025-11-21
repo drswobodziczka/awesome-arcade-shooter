@@ -7,6 +7,7 @@
 import Phaser from 'phaser';
 import { EnemyType, getEnemyProperties } from './enemies';
 import type { GameRegistry } from './types';
+import { validateTestModeConfig } from './types';
 
 /**
  * Menu scene for configuring game mode and starting the game.
@@ -119,8 +120,8 @@ export class MenuScene extends Phaser.Scene {
       fontFamily: 'Arial',
     }).setOrigin(0.5);
 
-    // Enable Enter key to start
-    this.input.keyboard?.once('keydown-ENTER', () => this.startGame());
+    // Enable Enter key to start (using 'on' instead of 'once' for consistent cleanup)
+    this.input.keyboard?.on('keydown-ENTER', () => this.startGame());
   }
 
   /**
@@ -168,19 +169,27 @@ export class MenuScene extends Phaser.Scene {
   }
 
   /**
+   * Updates a mode indicator's visual state.
+   * @param modeKey - The mode identifier ('normal' or 'test')
+   * @param label - The full label text for the mode
+   * @param isSelected - Whether this mode is currently selected
+   */
+  private updateModeIndicator(modeKey: string, label: string, isSelected: boolean): void {
+    const text = this.modeTexts.get(modeKey);
+    const bullet = isSelected ? '●' : '○';
+    const color = isSelected ? '#00ff00' : '#888888';
+    text?.setText(`${bullet} ${label}`).setColor(color);
+  }
+
+  /**
    * Selects game mode and updates UI.
    */
   private selectMode(mode: 'normal' | 'test'): void {
     this.gameMode = mode;
 
     // Update mode indicators
-    this.modeTexts.get('normal')?.setText(
-      mode === 'normal' ? '● Normal Mode (progressive spawning)' : '○ Normal Mode (progressive spawning)'
-    ).setColor(mode === 'normal' ? '#00ff00' : '#888888');
-
-    this.modeTexts.get('test')?.setText(
-      mode === 'test' ? '● Test Mode (spawn selected enemies)' : '○ Test Mode (spawn selected enemies)'
-    ).setColor(mode === 'test' ? '#00ff00' : '#888888');
+    this.updateModeIndicator('normal', 'Normal Mode (progressive spawning)', mode === 'normal');
+    this.updateModeIndicator('test', 'Test Mode (spawn selected enemies)', mode === 'test');
 
     // Show/hide enemy selection
     this.enemySelectionContainer?.setVisible(mode === 'test');
@@ -225,10 +234,11 @@ export class MenuScene extends Phaser.Scene {
       this.errorText.setText('');
     }
 
-    // Validate test mode has at least one enemy
-    if (this.gameMode === 'test' && this.selectedEnemies.size === 0) {
+    // Validate configuration using pure function
+    const validationError = validateTestModeConfig(this.gameMode, this.selectedEnemies);
+    if (validationError) {
       if (this.errorText) {
-        this.errorText.setText('⚠️ Please select at least one enemy for test mode');
+        this.errorText.setText(validationError);
       }
       return;
     }
