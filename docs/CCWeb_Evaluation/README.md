@@ -113,6 +113,15 @@ Podoba się praca w CC Web w przeglądarce
 - Zwiększa dyscyplinę developmentową
 - Potencjalnie pochodzi z sandbox environment - ciekawe czy to feature CC Web czy infrastruktury
 
+### 13. Auto Context Compaction
+
+(+) CC Web automatycznie robi kompaktowanie kontekstu gdy się zbliża do limitu.
+
+- Inteligentne zarządzanie kontekstem bez manual intervention
+- Umożliwia długie, iteracyjne sesje bez utraty pracy
+- Graceful degradation zamiast sudden context loss
+- Transparentne dla użytkownika - sesja po prostu trwa
+
 ## Limitations & Issues (-)
 
 ### 1. No File Mentions / Slash Commands
