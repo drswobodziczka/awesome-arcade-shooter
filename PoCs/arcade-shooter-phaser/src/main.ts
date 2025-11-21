@@ -139,6 +139,12 @@ function setupTestPanel() {
       }
     }
 
+    // Destroy existing game instance if present (prevents multiple canvases)
+    if (game) {
+      game.destroy(true); // true = remove canvas from DOM
+      game = null;
+    }
+
     // Hide test panel
     const testPanel = document.getElementById('testPanel')!;
     testPanel.classList.add('hidden');

@@ -170,14 +170,6 @@ export class MainGameScene extends Phaser.Scene {
     });
 
     // Setup collisions (will be implemented as enemies are created)
-
-    // Handle scene shutdown - show test panel again for restart
-    this.events.once('shutdown', () => {
-      const testPanel = document.getElementById('testPanel');
-      if (testPanel) {
-        testPanel.classList.remove('hidden');
-      }
-    });
   }
 
   /**
@@ -702,9 +694,23 @@ export class MainGameScene extends Phaser.Scene {
       }
     ).setOrigin(0.5);
 
-    // Handle restart
+    // Handle restart - destroy entire game and show test panel
     this.input.keyboard?.once('keydown-ENTER', () => {
-      this.scene.restart();
+      // Destroy the entire Phaser game instance (prevents canvas multiplication)
+      this.game.destroy(true, false);
+
+      // Show test panel again
+      const testPanel = document.getElementById('testPanel');
+      if (testPanel) {
+        testPanel.classList.remove('hidden');
+      }
+
+      // Reset controls text to initial state
+      const controlsEl = document.getElementById('controls');
+      if (controlsEl) {
+        controlsEl.style.opacity = '0.5';
+        controlsEl.innerHTML = 'Arrow keys: Move | Space: Shoot | <span style="color: #e94560;">Configure game below to start</span>';
+      }
     });
   }
 }
