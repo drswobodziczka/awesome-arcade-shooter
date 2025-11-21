@@ -8,6 +8,7 @@ import Phaser from 'phaser';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties, createEnemy } from './enemies';
 import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers } from './spawning';
 import { showEnemyIntroduction, isFirstEncounter, markAsEncountered } from './enemyIntro';
+import type { GameRegistry } from './types';
 
 /**
  * Game configuration constants.
@@ -57,8 +58,6 @@ export class MainGameScene extends Phaser.Scene {
   private gameStartTime: number = 0;
   /** Game over flag */
   private gameOver: boolean = false;
-  /** Game over screen shown flag */
-  private gameOverShown: boolean = false;
   /** Audio buffers for synth sounds */
   private audioBuffers: Map<string, AudioBuffer> = new Map();
   /** Set of encountered enemy types for first-time introductions */
@@ -99,16 +98,16 @@ export class MainGameScene extends Phaser.Scene {
    * Called after preload() - create game objects.
    */
   create(): void {
-    // Get game configuration from registry (set by main.ts)
-    this.gameMode = this.registry.get('gameMode') || 'normal';
-    this.enabledEnemies = this.registry.get('enabledEnemies') || [EnemyType.STANDARD];
+    // Get game configuration from registry (set by MenuScene) - type-safe
+    // Use ?? for consistency with GameOverScene
+    this.gameMode = (this.registry.get('gameMode') as GameRegistry['gameMode']) ?? 'normal';
+    this.enabledEnemies = (this.registry.get('enabledEnemies') as GameRegistry['enabledEnemies']) ?? [EnemyType.STANDARD];
 
     // Reset game state
     this.score = 0;
     this.enemies = [];
     this.enemyBullets = [];
     this.gameOver = false;
-    this.gameOverShown = false;
     this.lastPlayerShot = 0;
     this.gamePaused = false;
     this.isShowingIntroModal = false;
@@ -170,14 +169,6 @@ export class MainGameScene extends Phaser.Scene {
     });
 
     // Setup collisions (will be implemented as enemies are created)
-
-    // Handle scene shutdown - show test panel again for restart
-    this.events.once('shutdown', () => {
-      const testPanel = document.getElementById('testPanel');
-      if (testPanel) {
-        testPanel.classList.remove('hidden');
-      }
-    });
   }
 
   /**
@@ -192,12 +183,13 @@ export class MainGameScene extends Phaser.Scene {
       return;
     }
 
-    // Handle game over
+    // Handle game over - transition to GameOverScene
     if (this.gameOver) {
-      if (!this.gameOverShown) {
-        this.showGameOver();
-        this.gameOverShown = true;
-      }
+      // Save final score to registry (type-safe)
+      const finalScore: GameRegistry['finalScore'] = this.score;
+      this.game.registry.set('finalScore', finalScore);
+      // Transition to game over scene
+      this.scene.start('GameOverScene');
       return;
     }
 
@@ -652,59 +644,4 @@ export class MainGameScene extends Phaser.Scene {
            boundsA.y + boundsA.height > boundsB.y;
   }
 
-  /**
-   * Displays game over screen with final score.
-   */
-  private showGameOver(): void {
-    // Darken screen
-    this.add.rectangle(
-      this.scale.width / 2,
-      this.scale.height / 2,
-      this.scale.width,
-      this.scale.height,
-      0x000000,
-      0.7
-    );
-
-    // Game over text
-    this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 - 40,
-      'GAME OVER',
-      {
-        fontSize: '48px',
-        color: '#e94560',
-        fontFamily: 'Arial',
-      }
-    ).setOrigin(0.5);
-
-    // Final score
-    this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 + 10,
-      `Score: ${this.score}`,
-      {
-        fontSize: '24px',
-        color: '#ffffff',
-        fontFamily: 'Arial',
-      }
-    ).setOrigin(0.5);
-
-    // Restart hint
-    this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 + 50,
-      'Press Enter to restart',
-      {
-        fontSize: '18px',
-        color: '#ffffff',
-        fontFamily: 'Arial',
-      }
-    ).setOrigin(0.5);
-
-    // Handle restart
-    this.input.keyboard?.once('keydown-ENTER', () => {
-      this.scene.restart();
-    });
-  }
 }
