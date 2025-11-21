@@ -44,7 +44,7 @@ export class MainGameScene extends Phaser.Scene {
   /** Player bullets group */
   private bullets?: Phaser.Physics.Arcade.Group;
   /** Enemy game objects with visual sprites */
-  private enemies: Array<Enemy & { sprite: Phaser.GameObjects.Triangle }> = [];
+  private enemies: Array<Enemy & { sprite: Phaser.GameObjects.Triangle | Phaser.GameObjects.Arc; hpBar?: { bg: Phaser.GameObjects.Rectangle; bar: Phaser.GameObjects.Rectangle } }> = [];
   /** Enemy bullets group */
   private enemyBullets: Phaser.GameObjects.Rectangle[] = [];
   /** Enemy spawn timers */
@@ -238,15 +238,51 @@ export class MainGameScene extends Phaser.Scene {
     // Create sprites for newly spawned enemies
     for (const enemy of newEnemies) {
       const props = getEnemyProperties(enemy.type);
-      const sprite = this.add.triangle(
-        enemy.x,
-        enemy.y,
-        0, enemy.height,                    // bottom point
-        -enemy.width/2, 0,                  // top-left
-        enemy.width/2, 0,                   // top-right
-        parseInt(props.color.replace('#', ''), 16)
-      );
-      this.enemies.push({ ...enemy, sprite });
+
+      if (enemy.type === EnemyType.TELEPORT) {
+        // TELEPORT enemy: render as circle with color cycling
+        const centerX = enemy.x + enemy.width / 2;
+        const centerY = enemy.y + enemy.height / 2;
+        const radius = enemy.width / 2;
+        const sprite = this.add.arc(
+          centerX,
+          centerY,
+          radius,
+          0,
+          360,
+          false,
+          parseInt(props.color.replace('#', ''), 16)
+        );
+        sprite.setStrokeStyle(2, 0xffffff); // Add white border
+        this.enemies.push({ ...enemy, sprite });
+      } else {
+        // Other enemies: render as triangles
+        const sprite = this.add.triangle(
+          enemy.x,
+          enemy.y,
+          0, enemy.height,                    // bottom point
+          -enemy.width/2, 0,                  // top-left
+          enemy.width/2, 0,                   // top-right
+          parseInt(props.color.replace('#', ''), 16)
+        );
+
+        // Add HP bar for TANK enemies
+        if (enemy.type === EnemyType.TANK) {
+          const barWidth = enemy.width;
+          const barHeight = 4;
+          const barX = enemy.x;
+          const barY = enemy.y - 8;
+
+          const hpBarBg = this.add.rectangle(barX + barWidth / 2, barY + barHeight / 2, barWidth, barHeight, 0x333333);
+          const hpBar = this.add.rectangle(barX + barWidth / 2, barY + barHeight / 2, barWidth, barHeight, 0x2ecc71);
+          hpBar.setOrigin(0, 0.5);
+          hpBar.x = barX;
+
+          this.enemies.push({ ...enemy, sprite, hpBar: { bg: hpBarBg, bar: hpBar } });
+        } else {
+          this.enemies.push({ ...enemy, sprite });
+        }
+      }
     }
 
     // Check for first encounters in newly spawned enemies only (optimization)
@@ -281,7 +317,37 @@ export class MainGameScene extends Phaser.Scene {
       );
 
       // Update sprite position
-      enemy.sprite.setPosition(enemy.x, enemy.y);
+      if (enemy.type === EnemyType.TELEPORT) {
+        // TELEPORT enemy: update circle position (center-based)
+        const centerX = enemy.x + enemy.width / 2;
+        const centerY = enemy.y + enemy.height / 2;
+        enemy.sprite.setPosition(centerX, centerY);
+
+        // Cycle through colors
+        const colors = [0xff00ff, 0x00ffff, 0xffff00, 0xff00aa, 0x00ff88];
+        const colorIndex = Math.floor(now / 300) % colors.length;
+        (enemy.sprite as Phaser.GameObjects.Arc).setFillStyle(colors[colorIndex]);
+      } else {
+        // Other enemies: update triangle position (top-left based)
+        enemy.sprite.setPosition(enemy.x, enemy.y);
+
+        // Update HP bar for TANK enemies
+        if (enemy.type === EnemyType.TANK && enemy.hpBar) {
+          const barWidth = enemy.width;
+          const barHeight = 4;
+          const barX = enemy.x;
+          const barY = enemy.y - 8;
+
+          enemy.hpBar.bg.setPosition(barX + barWidth / 2, barY + barHeight / 2);
+          enemy.hpBar.bar.setPosition(barX, barY + barHeight / 2);
+
+          // Update HP bar width and color
+          const hpRatio = enemy.hp / enemy.maxHp;
+          enemy.hpBar.bar.width = barWidth * hpRatio;
+          const hpColor = hpRatio > 0.5 ? 0x2ecc71 : hpRatio > 0.25 ? 0xf39c12 : 0xe74c3c;
+          enemy.hpBar.bar.setFillStyle(hpColor);
+        }
+      }
 
       // Enemy shooting
       const props = getEnemyProperties(enemy.type);
@@ -293,6 +359,8 @@ export class MainGameScene extends Phaser.Scene {
       // Remove off-screen enemies
       if (enemy.y > this.scale.height + enemy.height) {
         enemy.sprite.destroy();
+        enemy.hpBar?.bg.destroy();
+        enemy.hpBar?.bar.destroy();
         return false;
       }
       return true;
@@ -364,6 +432,8 @@ export class MainGameScene extends Phaser.Scene {
             this.cameras.main.shake(200, 0.005);
 
             enemy.sprite.destroy();
+            enemy.hpBar?.bg.destroy();
+            enemy.hpBar?.bar.destroy();
             this.enemies.splice(i, 1);
           }
           break;
