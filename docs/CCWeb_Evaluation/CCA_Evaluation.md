@@ -43,6 +43,15 @@
 - Automatyzacja całego cyklu bez manual intervention
 - Jak CC Web - jedzie na totalnym automacie
 
+### 6. Minimalist & Editable Tool Permissions
+
+(+) Minimalistyczne i edytowalne uprawnienia do używania narzędzi.
+
+- Granularna kontrola nad tym co agent może robić
+- Łatwo konfigurować i dostosowywać permissions
+- Bezpieczne escalation uprawnień zgodnie z potrzebami
+- Transparentny model uprawnień
+
 ## Limitations & Issues (-)
 
 ### 1. Slow Execution Time
