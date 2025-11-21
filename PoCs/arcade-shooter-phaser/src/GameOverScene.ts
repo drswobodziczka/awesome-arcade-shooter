@@ -4,6 +4,7 @@
  */
 
 import Phaser from 'phaser';
+import type { GameRegistry } from './types';
 
 /**
  * Game over scene shown when player dies.
@@ -15,8 +16,8 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   create(): void {
-    // Get final score from registry (set by MainGameScene)
-    const finalScore = this.game.registry.get('finalScore') || 0;
+    // Get final score from registry (set by MainGameScene) - type-safe
+    const finalScore = (this.game.registry.get('finalScore') as GameRegistry['finalScore']) || 0;
 
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;
@@ -69,6 +70,15 @@ export class GameOverScene extends Phaser.Scene {
 
     // Enable Enter key
     this.input.keyboard?.once('keydown-ENTER', () => this.returnToMenu());
+  }
+
+  /**
+   * Phaser lifecycle: cleanup when scene shuts down.
+   * Explicitly removes event listeners to prevent memory leaks.
+   */
+  shutdown(): void {
+    // Remove keyboard listener
+    this.input.keyboard?.off('keydown-ENTER');
   }
 
   /**

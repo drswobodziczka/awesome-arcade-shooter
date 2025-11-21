@@ -8,6 +8,7 @@ import Phaser from 'phaser';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties, createEnemy } from './enemies';
 import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers } from './spawning';
 import { showEnemyIntroduction, isFirstEncounter, markAsEncountered } from './enemyIntro';
+import type { GameRegistry } from './types';
 
 /**
  * Game configuration constants.
@@ -97,9 +98,9 @@ export class MainGameScene extends Phaser.Scene {
    * Called after preload() - create game objects.
    */
   create(): void {
-    // Get game configuration from registry (set by main.ts)
-    this.gameMode = this.registry.get('gameMode') || 'normal';
-    this.enabledEnemies = this.registry.get('enabledEnemies') || [EnemyType.STANDARD];
+    // Get game configuration from registry (set by MenuScene) - type-safe
+    this.gameMode = (this.registry.get('gameMode') as GameRegistry['gameMode']) || 'normal';
+    this.enabledEnemies = (this.registry.get('enabledEnemies') as GameRegistry['enabledEnemies']) || [EnemyType.STANDARD];
 
     // Reset game state
     this.score = 0;
@@ -183,8 +184,9 @@ export class MainGameScene extends Phaser.Scene {
 
     // Handle game over - transition to GameOverScene
     if (this.gameOver) {
-      // Save final score to registry
-      this.game.registry.set('finalScore', this.score);
+      // Save final score to registry (type-safe)
+      const finalScore: GameRegistry['finalScore'] = this.score;
+      this.game.registry.set('finalScore', finalScore);
       // Transition to game over scene
       this.scene.start('GameOverScene');
       return;

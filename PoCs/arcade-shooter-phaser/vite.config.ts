@@ -5,5 +5,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom', // DOM environment for Phaser tests
+    setupFiles: ['./src/test-setup.ts'], // Mock canvas/WebGL for Phaser
   },
 });

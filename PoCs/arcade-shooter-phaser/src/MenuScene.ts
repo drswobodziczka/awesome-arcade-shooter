@@ -6,6 +6,7 @@
 
 import Phaser from 'phaser';
 import { EnemyType, getEnemyProperties } from './enemies';
+import type { GameRegistry } from './types';
 
 /**
  * Menu scene for configuring game mode and starting the game.
@@ -22,6 +23,8 @@ export class MenuScene extends Phaser.Scene {
   private enemyTexts: Map<EnemyType, Phaser.GameObjects.Text> = new Map();
   /** Enemy selection container (shown only in test mode) */
   private enemySelectionContainer?: Phaser.GameObjects.Container;
+  /** Error text for validation feedback */
+  private errorText?: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'MenuScene' });
@@ -86,6 +89,14 @@ export class MenuScene extends Phaser.Scene {
 
     // Enemy selection (for test mode)
     this.createEnemySelection(centerX, y);
+
+    // Error text (hidden by default)
+    this.errorText = this.add.text(centerX, this.scale.height - 150, '', {
+      fontSize: '16px',
+      color: '#ff6b6b',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
 
     // Start button
     const startBtn = this.add.text(centerX, this.scale.height - 100, 'START GAME', {
@@ -197,19 +208,37 @@ export class MenuScene extends Phaser.Scene {
   }
 
   /**
+   * Phaser lifecycle: cleanup when scene shuts down.
+   * Explicitly removes event listeners to prevent memory leaks.
+   */
+  shutdown(): void {
+    // Remove keyboard listener
+    this.input.keyboard?.off('keydown-ENTER');
+  }
+
+  /**
    * Starts the game with selected configuration.
    */
   private startGame(): void {
+    // Clear any previous error
+    if (this.errorText) {
+      this.errorText.setText('');
+    }
+
     // Validate test mode has at least one enemy
     if (this.gameMode === 'test' && this.selectedEnemies.size === 0) {
-      // Show error (could add a text element for this)
-      console.warn('Please select at least one enemy for test mode');
+      if (this.errorText) {
+        this.errorText.setText('⚠️ Please select at least one enemy for test mode');
+      }
       return;
     }
 
-    // Pass configuration to MainGameScene via registry
-    this.game.registry.set('gameMode', this.gameMode);
-    this.game.registry.set('enabledEnemies', Array.from(this.selectedEnemies));
+    // Pass configuration to MainGameScene via registry (type-safe)
+    const gameMode: GameRegistry['gameMode'] = this.gameMode;
+    const enabledEnemies: GameRegistry['enabledEnemies'] = Array.from(this.selectedEnemies);
+
+    this.game.registry.set('gameMode', gameMode);
+    this.game.registry.set('enabledEnemies', enabledEnemies);
 
     // Start main game scene
     this.scene.start('MainGameScene');
