@@ -271,7 +271,7 @@ export class MainGameScene extends Phaser.Scene {
           const barWidth = enemy.width;
           const barHeight = 4;
           const barX = enemy.x;
-          const barY = enemy.y - 8;
+          const barY = enemy.y - 8; // Position above sprite
 
           const hpBarBg = this.add.rectangle(barX + barWidth / 2, barY + barHeight / 2, barWidth, barHeight, 0x333333);
           const hpBar = this.add.rectangle(barX + barWidth / 2, barY + barHeight / 2, barWidth, barHeight, 0x2ecc71);
@@ -336,7 +336,7 @@ export class MainGameScene extends Phaser.Scene {
           const barWidth = enemy.width;
           const barHeight = 4;
           const barX = enemy.x;
-          const barY = enemy.y - 8;
+          const barY = enemy.y - 8; // Position above sprite
 
           enemy.hpBar.bg.setPosition(barX + barWidth / 2, barY + barHeight / 2);
           enemy.hpBar.bar.setPosition(barX, barY + barHeight / 2);
