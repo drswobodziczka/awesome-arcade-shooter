@@ -57,8 +57,6 @@ export class MainGameScene extends Phaser.Scene {
   private gameStartTime: number = 0;
   /** Game over flag */
   private gameOver: boolean = false;
-  /** Game over screen shown flag */
-  private gameOverShown: boolean = false;
   /** Audio buffers for synth sounds */
   private audioBuffers: Map<string, AudioBuffer> = new Map();
   /** Set of encountered enemy types for first-time introductions */
@@ -108,7 +106,6 @@ export class MainGameScene extends Phaser.Scene {
     this.enemies = [];
     this.enemyBullets = [];
     this.gameOver = false;
-    this.gameOverShown = false;
     this.lastPlayerShot = 0;
     this.gamePaused = false;
     this.isShowingIntroModal = false;
@@ -184,12 +181,12 @@ export class MainGameScene extends Phaser.Scene {
       return;
     }
 
-    // Handle game over
+    // Handle game over - transition to GameOverScene
     if (this.gameOver) {
-      if (!this.gameOverShown) {
-        this.showGameOver();
-        this.gameOverShown = true;
-      }
+      // Save final score to registry
+      this.game.registry.set('finalScore', this.score);
+      // Transition to game over scene
+      this.scene.start('GameOverScene');
       return;
     }
 
@@ -644,73 +641,4 @@ export class MainGameScene extends Phaser.Scene {
            boundsA.y + boundsA.height > boundsB.y;
   }
 
-  /**
-   * Displays game over screen with final score.
-   */
-  private showGameOver(): void {
-    // Darken screen
-    this.add.rectangle(
-      this.scale.width / 2,
-      this.scale.height / 2,
-      this.scale.width,
-      this.scale.height,
-      0x000000,
-      0.7
-    );
-
-    // Game over text
-    this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 - 40,
-      'GAME OVER',
-      {
-        fontSize: '48px',
-        color: '#e94560',
-        fontFamily: 'Arial',
-      }
-    ).setOrigin(0.5);
-
-    // Final score
-    this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 + 10,
-      `Score: ${this.score}`,
-      {
-        fontSize: '24px',
-        color: '#ffffff',
-        fontFamily: 'Arial',
-      }
-    ).setOrigin(0.5);
-
-    // Restart hint
-    this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 + 50,
-      'Press Enter to restart',
-      {
-        fontSize: '18px',
-        color: '#ffffff',
-        fontFamily: 'Arial',
-      }
-    ).setOrigin(0.5);
-
-    // Handle restart - destroy entire game and show test panel
-    this.input.keyboard?.once('keydown-ENTER', () => {
-      // Destroy the entire Phaser game instance (prevents canvas multiplication)
-      this.game.destroy(true, false);
-
-      // Show test panel again
-      const testPanel = document.getElementById('testPanel');
-      if (testPanel) {
-        testPanel.classList.remove('hidden');
-      }
-
-      // Reset controls text to initial state
-      const controlsEl = document.getElementById('controls');
-      if (controlsEl) {
-        controlsEl.style.opacity = '0.5';
-        controlsEl.innerHTML = 'Arrow keys: Move | Space: Shoot | <span style="color: #e94560;">Configure game below to start</span>';
-      }
-    });
-  }
 }

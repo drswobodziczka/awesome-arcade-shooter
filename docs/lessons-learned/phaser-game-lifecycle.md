@@ -16,61 +16,99 @@ Po restarcie gry występowały trzy powiązane błędy:
 - Restart przez `scene.restart()` resetował tylko scenę, nie całą grę
 - Stare instancje pozostawały w pamięci i nasłuchiwały inputu → konflikt kontrolek
 
-## Solution
+## Solutions
 
-### 1. Niszczenie starej instancji przed utworzeniem nowej (main.ts)
+### Solution 1: Hard Recreate (Initial Fix - Not Optimal)
+
+**Niszczenie całej gry przy każdym restarcie:**
 
 ```typescript
-// Przed utworzeniem nowej gry
+// main.ts - przy każdym starcie
 if (game) {
-  game.destroy(true); // true = usuń canvas z DOM
+  game.destroy(true);
   game = null;
 }
 game = new Phaser.Game(config);
+
+// MainGameScene.ts - przy game over
+this.game.destroy(true, false);
+showTestPanel();
 ```
 
-### 2. Pełny reset zamiast restart sceny (MainGameScene.ts)
+**Problem z tym podejściem:**
+- ❌ Performance overhead ~100-300ms przy każdym restarcie
+- ❌ Re-inicjalizacja WebGL context, physics engine, audio context
+- ❌ Re-generacja wszystkich assetów (audio buffers, textures)
+- ❌ Utrata shared resources między restartami
+
+### Solution 2: Multi-Scene Architecture (Optimal)
+
+**Jedna instancja gry + przełączanie scen:**
 
 ```typescript
-// ŹLE - resetuje tylko scenę, nie niszczy gry
-this.scene.restart();
+// main.ts - JEDNOKROTNA inicjalizacja
+const game = new Phaser.Game({
+  scene: [MenuScene, MainGameScene, GameOverScene]
+});
 
-// DOBRZE - niszczy całą instancję
-this.game.destroy(true, false);
-// Pokaż panel testowy ponownie
-document.getElementById('testPanel')?.classList.remove('hidden');
+// MenuScene → MainGameScene
+this.scene.start('MainGameScene');
+
+// MainGameScene → GameOverScene (przy game over)
+this.game.registry.set('finalScore', this.score);
+this.scene.start('GameOverScene');
+
+// GameOverScene → MenuScene (restart)
+this.scene.start('MenuScene');
 ```
 
-## Key Takeaways: Phaser & Game Development
+**Zalety:**
+- ✅ **Zero overhead** przy przełączaniu scen
+- ✅ Shared resources (audio, textures, physics engine)
+- ✅ Phaser zaprojektowany pod multi-scene
+- ✅ `scene.start()` automatycznie czyści poprzednią scenę
+- ✅ Lepsze separation of concerns (Menu/Game/GameOver)
 
-### Phaser-specific:
+## Key Takeaways
 
-1. **`game.destroy(removeCanvas, noReturn)`** - kluczowa metoda czyszczenia
-   - `removeCanvas: true` → usuwa `<canvas>` z DOM
-   - `noReturn: false` → pozwala wrócić do normalnego flow
+### Phaser Scene Lifecycle (kluczowe różnice):
 
-2. **`scene.restart()` ≠ pełny reset** - resetuje tylko stan sceny, nie niszczy game instance
+| Metoda | Scope | Canvas | Resources | Use Case |
+|--------|-------|--------|-----------|----------|
+| `scene.restart()` | Resetuje scenę | ❌ Zostaje | ✅ Shared | Quick retry w tej samej scenie |
+| `scene.start('Other')` | Zmienia scenę | ❌ Zostaje | ✅ Shared | **Navigation między stanami** |
+| `game.destroy()` | Niszczy całą grę | ✅ Usuwa | ❌ Lost | Wyjście z gry (rare) |
 
-3. **Jedna instancja Phaser.Game = jeden canvas** - zawsze niszczyć przed utworzeniem nowej
+### Architectural Patterns:
+
+**❌ Anti-pattern (Hard Recreate):**
+```typescript
+gameOver → game.destroy() → new Phaser.Game()
+// Performance hit przy każdym restarcie
+```
+
+**✅ Best Practice (Multi-Scene):**
+```typescript
+Menu → Game → GameOver → Menu (loop via scene.start())
+// Zero overhead, jedna instancja żyje przez cały czas
+```
 
 ### Game Development Principles:
 
-1. **Explicit state management** - gry mają złożony cykl życia (init → play → pause → game over → restart)
-   - Każdy stan wymaga explicite cleanup/initialization
+1. **Design for state transitions** - gry to automaty stanów (FSM)
+   - Każdy stan = osobna scena
+   - Transitions = `scene.start()`
 
-2. **Memory leaks w grach są niewidoczne** - stare instancje nasłuchują inputu w tle
-   - Objawy: dziwne zachowanie kontrolek, performance issues, memory leaks
+2. **Shared resources optimization** - audio/textures/physics raz inicjalizowane
+   - `preload()` w pierwszej scenie ładuje assety dla wszystkich scen
+   - `game.registry` = global state między scenami
 
-3. **Test restart flow early** - większość bugów ujawnia się dopiero przy wielokrotnym restarcie
+3. **Test the loop** - testuj pełny cykl: Menu → Game → GameOver → Menu → Game
+   - Memory leaks ujawniają się po 5-10 cyklach
+   - Performance degradation = znak problemu
 
-4. **DOM + Game Engine = dwa światy** - synchronizuj stan UI (test panel) z cyklem życia gry
-   - Phaser zarządza canvasem, ale reszta UI to zwykły DOM → trzeba ręcznie synchronizować
-
-## Prevention Pattern
-
-```typescript
-// Pattern: zawsze cleanup → reset UI → create new
-if (existingGame) existingGame.destroy(true);
-resetUItoInitialState();
-newGame = createGame();
-```
+4. **Separate UI from game logic**
+   - MenuScene = konfiguracja
+   - MainGameScene = gameplay
+   - GameOverScene = results
+   - NIE mieszaj DOM + Phaser (albo jedno, albo drugie)
