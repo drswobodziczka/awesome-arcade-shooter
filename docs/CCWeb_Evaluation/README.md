@@ -94,6 +94,15 @@ Podoba się praca w CC Web w przeglądarce
 
 **Impact:** Trade-off między prędkością a zrozumieniem/kontrolą. Szybkie iteracje kosztem cognitive clarity.
 
+### 11. GitHub Issues Context Reading
+
+(+) CC Web potrafi czytać treść GitHub Issues przez WebFetch, gdy jest osadzony w sandboxie w kontekście tego samego projektu.
+
+- Umożliwia automatyczne pobieranie treści issues
+- Agent może samodzielnie analizować zgłoszenia
+- Ułatwia workflow: issue → analiza → implementacja
+- Częściowo rozwiązuje problem z punktu 9 (Feature request o czytaniu GitHub)
+
 ## Limitations & Issues (-)
 
 ### 1. No File Mentions / Slash Commands
