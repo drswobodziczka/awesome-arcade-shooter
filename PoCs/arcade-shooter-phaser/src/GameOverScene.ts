@@ -68,17 +68,17 @@ export class GameOverScene extends Phaser.Scene {
       fontFamily: 'Arial',
     }).setOrigin(0.5);
 
-    // Enable Enter key (using 'on' instead of 'once' for consistent cleanup)
-    this.input.keyboard?.on('keydown-ENTER', () => this.returnToMenu());
+    // Enable Enter key (once auto-removes after first trigger)
+    this.input.keyboard?.once('keydown-ENTER', () => this.returnToMenu());
   }
 
   /**
    * Phaser lifecycle: cleanup when scene shuts down.
-   * Explicitly removes event listeners to prevent memory leaks.
+   * Note: Using once() for keyboard listener - auto-removes on first trigger.
+   * Phaser handles cleanup on scene transition for unused once() listeners.
    */
   shutdown(): void {
-    // Remove keyboard listener
-    this.input.keyboard?.off('keydown-ENTER');
+    // No manual cleanup needed for once() listeners
   }
 
   /**
