@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
       issues: write
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
@@ -46,5 +46,6 @@ jobs:
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr:*)'
+          claude_args: |
+            --allowedTools "Bash(npm ci:*),Bash(npm install:*),Bash(npm test:*),Bash(npm run test:*),Bash(npm run build:*),Bash(npm run type-check:*),Bash(npm run dev:*),Bash(npm run preview:*),Bash(gh issue:*),Bash(gh pr:*),Bash(gh label:*)"
 
