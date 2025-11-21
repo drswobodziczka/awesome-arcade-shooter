@@ -68,8 +68,8 @@ export class GameOverScene extends Phaser.Scene {
       fontFamily: 'Arial',
     }).setOrigin(0.5);
 
-    // Enable Enter key
-    this.input.keyboard?.once('keydown-ENTER', () => this.returnToMenu());
+    // Enable Enter key (using 'on' instead of 'once' for consistent cleanup)
+    this.input.keyboard?.on('keydown-ENTER', () => this.returnToMenu());
   }
 
   /**
