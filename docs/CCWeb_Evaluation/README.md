@@ -147,6 +147,16 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 
 ### 6. CRITICAL: wolno startujace sesje, zawieszajace sie sesje, sesje konczace sie bledem
 
+### 7. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands
+
+Nie można używać osobistych workflow lub slash commands w CC Web.
+
+- Brak możliwości stosowania własnych promptów zdefiniowanych lokalnie
+- Wymusza kopiowanie promptów bezpośrednio do konwersacji lub wklejanie do repo
+- Brak możliwości automatyzacji czy integracji z własnymi narzędziami
+- Drastycznie zmniejsza produktywność przy pracy z recurring patterns/workflows
+- **Frustrujące ograniczenie** - kto używa workflow w CLI, będzie znacznie mniej produktywny w Web
+
 ## Unknown / To Be Tested (?)
 
 ### 1. Mobile/Android Support
