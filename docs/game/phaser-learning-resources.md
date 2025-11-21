@@ -83,6 +83,52 @@
 
 ---
 
+## ⚖️ Phaser Launcher vs Professional Setup (Windsurf/Claude Code + Vite)
+
+### Target Audience Launcha: Absolute Beginners
+
+Phaser Launcher został stworzony dla osób **bez żadnego setup'u** - zero node/npm/IDE experience.
+
+### Co oferuje Launcher:
+
+| Feature | Launcher | AI-Assisted IDE + Vite | Winner |
+|---------|----------|------------------------|--------|
+| **Code Editor** | Basic JS + Phaser IntelliSense | AI generuje/refactoruje/debuguje kod | 🏆 **AI IDE** |
+| **Hot Reload** | Ctrl+S → refresh | Vite HMR (instant, bez save) | 🏆 **Vite** |
+| **Media Browser** | GUI asset management | File explorer + extensions | ⚠️ Marginally useful |
+| **Setup Time** | Zero config | One-time setup (already done) | ⚠️ Irrelevant if you have setup |
+| **Learning Resources** | Built-in 400p book + tutorials | Internet + better curated sources | ⚠️ Nice-to-have |
+| **Game Templates** | 6 templates (2048, Breakout, Snake, etc.) | GitHub examples (5000+) | 🟰 Equal |
+| **Testing** | ❌ None | Vitest integration | 🏆 **Pro Setup** |
+| **Git Integration** | ❌ None | Native support | 🏆 **Pro Setup** |
+| **TypeScript** | ❌ JS only | Full TS support | 🏆 **Pro Setup** |
+| **Production Builds** | ❌ Limited | Vite optimization | 🏆 **Pro Setup** |
+| **Extensions Ecosystem** | ❌ None | Unlimited | 🏆 **Pro Setup** |
+
+---
+
+### Verdict dla Experienced Developers:
+
+**❌ NIE INSTALUJ** jeśli już masz:
+- AI-assisted IDE (Windsurf, Cursor, Claude Code)
+- Vite setup z hot reload
+- Git workflow
+- Modern tooling (ESLint, Vitest, TypeScript)
+
+**Launcher = training wheels dla beginnerów bez setup'u.**
+
+---
+
+### Jedyne Potencjalne Użycie dla Pro Dev:
+
+**Game Templates jako code reference:**
+- Sprawdź czy templates są dostępne na GitHubie (bez instalowania)
+- Lub pozostań przy Phaser Examples (5000+ snippets: https://phaser.io/examples/v3)
+
+**Bottom line:** Twój professional setup oferuje AI assistance, modern tooling i production-ready workflow. Launcher oferuje "wygodę" którą już masz, ale bez AI i zaawansowanych features.
+
+---
+
 ## 🎮 Phaser.js vs Inne Silniki - Kiedy Używać?
 
 ### ✅ Mocne Strony Phaser
