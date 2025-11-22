@@ -103,6 +103,25 @@ Podoba się praca w CC Web w przeglądarce
 - Ułatwia workflow: issue → analiza → implementacja
 - Częściowo rozwiązuje problem z punktu 9 (Feature request o czytaniu GitHub)
 
+### 12. Predefined Hooks Support
+
+(+) CC Web ma wbudowaną obsługę predefined hooks - np. stop-hook-git-check.sh automatycznie wymusza commit zmian przed zatrzymaniem sesji.
+
+- Automatyczne governance i best practices
+- Uniemożliwia wyjście sesji z niezacommitowanymi zmianami
+- Elegancka automatyzacja bez konieczności konfiguracji - działa out-of-the-box
+- Zwiększa dyscyplinę developmentową
+- Potencjalnie pochodzi z sandbox environment - ciekawe czy to feature CC Web czy infrastruktury
+
+### 13. Auto Context Compaction
+
+(+) CC Web automatycznie robi kompaktowanie kontekstu gdy się zbliża do limitu.
+
+- Inteligentne zarządzanie kontekstem bez manual intervention
+- Umożliwia długie, iteracyjne sesje bez utraty pracy
+- Graceful degradation zamiast sudden context loss
+- Transparentne dla użytkownika - sesja po prostu trwa
+
 ## Limitations & Issues (-)
 
 ### 1. No File Mentions / Slash Commands
@@ -146,6 +165,16 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 **Impact:** Workflow "build failed" → użytkownik musi ręcznie podać logi lub opisać problem.
 
 ### 6. CRITICAL: wolno startujace sesje, zawieszajace sie sesje, sesje konczace sie bledem
+
+### 7. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands
+
+Nie można używać osobistych workflow lub slash commands w CC Web.
+
+- Brak możliwości stosowania własnych promptów zdefiniowanych lokalnie
+- Wymusza kopiowanie promptów bezpośrednio do konwersacji lub wklejanie do repo
+- Brak możliwości automatyzacji czy integracji z własnymi narzędziami
+- Drastycznie zmniejsza produktywność przy pracy z recurring patterns/workflows
+- **Frustrujące ograniczenie** - kto używa workflow w CLI, będzie znacznie mniej produktywny w Web
 
 ## Unknown / To Be Tested (?)
 
