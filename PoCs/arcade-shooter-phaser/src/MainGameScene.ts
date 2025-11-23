@@ -270,14 +270,16 @@ export class MainGameScene extends Phaser.Scene {
         if (enemy.type === EnemyType.TANK) {
           const barWidth = enemy.width;
           const barHeight = 4;
-          const barX = enemy.x;
-          const barY = enemy.y - 8; // Position above sprite
-
-          const hpBarBg = this.add.rectangle(barX + barWidth / 2, barY + barHeight / 2, barWidth, barHeight, 0x333333);
-          const hpBar = this.add.rectangle(barX + barWidth / 2, barY + barHeight / 2, barWidth, barHeight, 0x2ecc71);
-          hpBar.setOrigin(0, 0.5);
-          hpBar.x = barX;
-
+          const verticalMargin = 10;
+          
+          // Calculate position above the sprite
+          const barX = enemy.x - enemy.width / 2;
+          const barY = enemy.y - enemy.height / 2 - verticalMargin;
+        
+          // Background centered at (barX, barY)
+          const hpBarBg = this.add.rectangle(barX, barY, barWidth, barHeight, 0x333333);
+          const hpBar = this.add.rectangle(barX, barY, barWidth, barHeight, 0x2ecc71);
+          
           this.enemies.push({ ...enemy, sprite, hpBar: { bg: hpBarBg, bar: hpBar } });
         } else {
           this.enemies.push({ ...enemy, sprite });
@@ -334,15 +336,18 @@ export class MainGameScene extends Phaser.Scene {
         // Update HP bar for TANK enemies
         if (enemy.type === EnemyType.TANK && enemy.hpBar) {
           const barWidth = enemy.width;
-          const barHeight = 4;
+          // Sprite origin is (0.5, 0.5), so top edge is y - height/2
+          const verticalMargin = 10;
           const barX = enemy.x;
-          const barY = enemy.y - 8; // Position above sprite
+          const barY = enemy.y - (enemy.height / 2) - verticalMargin;
 
-          enemy.hpBar.bg.setPosition(barX + barWidth / 2, barY + barHeight / 2);
-          enemy.hpBar.bar.setPosition(barX, barY + barHeight / 2);
+          // Background is centered
+          enemy.hpBar.bg.setPosition(barX - barWidth / 2, barY);
+          // Bar (Origin 0, 0.5) starts at left edge
+          enemy.hpBar.bar.setPosition(barX - barWidth / 2, barY);
 
           // Update HP bar width and color
-          const hpRatio = enemy.hp / enemy.maxHp;
+          const hpRatio = Math.max(0, enemy.hp / enemy.maxHp);
           enemy.hpBar.bar.width = barWidth * hpRatio;
           const hpColor = hpRatio > 0.5 ? 0x2ecc71 : hpRatio > 0.25 ? 0xf39c12 : 0xe74c3c;
           enemy.hpBar.bar.setFillStyle(hpColor);
