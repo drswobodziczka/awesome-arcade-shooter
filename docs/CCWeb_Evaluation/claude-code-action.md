@@ -63,6 +63,15 @@ GitHub Action do automatycznego code review i development tasks z Claude.
 - Versionable configuration w repozytorium
 - Przejrzysta struktura projektu
 
+### 8. Ready-to-Use Solutions
+
+(+) Complete, ready-to-use solutions for common automation scenarios
+
+- Gotowe exemplary dla typowych automation use cases
+- Skrócony czas setup dla nowych projektów
+- Best practices z oficjalnej dokumentacji
+- **Reference:** https://github.com/anthropics/claude-code-action/blob/main/docs/solutions.md
+
 ## Integration with CC Web
 
 ### Synergy Benefits
