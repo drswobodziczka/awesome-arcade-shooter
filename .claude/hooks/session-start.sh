@@ -4,50 +4,45 @@
 
 cat << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 SESSION START - PROJECT REGULATIONS LOADED
+🎯 SESSION START - MUST READ PROJECT REGULATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📚 Guidelines loaded into context:
-  ✓ CLAUDE.md (Critical Rules)
-  ✓ docs/agent/coding_guidelines.md
-  ✓ docs/agent/testing_guidelines.md
-  ✓ docs/agent/pull_request_guidelines.md
+📚 MANDATORY: Read these guidelines files before coding:
+  → CLAUDE.md
+  → docs/agent/coding_guidelines.md
+  → docs/agent/testing_guidelines.md
+  → docs/agent/pull_request_guidelines.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️  CRITICAL RULES - MUST FOLLOW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   🔴 RULE #1: BE CONCISE
+     Source: CLAUDE.md
      → Action over explanation
      → Show code/commands, skip essays
      → Respect token budget
 
   🔴 RULE #2: FOLLOW CODING GUIDELINES
-     → docs/agent/coding_guidelines.md
-     → TypeScript strict mode, NO `any`
-     → KISS, DRY, YAGNI, SOLID
-     → Canvas performance rules
+     Source: docs/agent/coding_guidelines.md
+     → READ THE FILE for all rules
 
   🔴 RULE #3: FOLLOW TESTING GUIDELINES
-     → docs/agent/testing_guidelines.md
-     → AAA Pattern, co-located .test.ts files
-     → Coverage: 75%+ core logic
-     → Never commit failing tests
+     Source: docs/agent/testing_guidelines.md
+     → READ THE FILE for all rules
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎮 PROJECT INFO
+🎮 PROJECT INFO - Check these files for up-to-date details:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Project:        Arcade Shooter Game
-  Language:       TypeScript 5.9.3
-  Renderer:       HTML5 Canvas
-  Build Tool:     Vite 7.2.2
-  Test Framework: Vitest 4.0.9
-  Coverage Goal:  75%+ for core game logic
+  → package.json (dependencies, scripts)
+  → PoCs/arcade-shooter/package.json (project-specific config)
+  → README.md (project overview)
+  → CLAUDE.md (development principles)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🚀 Ready to code! Remember: Think first, code second.
+🚀 Ready to code! Remember: Read guidelines first, then code.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
