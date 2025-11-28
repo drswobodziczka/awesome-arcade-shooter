@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "session-start": {
+      "command": "./.claude/hooks/session-start.sh"
+    },
+    "tool-call": {
+      "command": "./.claude/hooks/tool-call.sh"
+    }
+  }
+}
