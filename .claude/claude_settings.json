@@ -16,7 +16,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./.claude/hooks/pre-tool-use.sh"
+            "command": "./.claude/hooks/pre-commit.sh"
+          },
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-pr.sh"
           }
         ]
       }
