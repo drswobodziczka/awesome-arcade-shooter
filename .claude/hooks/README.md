@@ -29,15 +29,20 @@ These hooks were created to ensure Claude Code agents consistently follow projec
 
 ---
 
-### `user-prompt-submit.sh` ⭐ **CRITICAL**
+### `tool-call.sh` ⭐ **CRITICAL**
 
-**When:** Executes before processing user prompts containing commit or PR keywords
+**When:** Executes before tool calls (specifically before Bash tool execution)
 
 **Purpose:** Enforce quality gates before commits and pull requests
 
+**Why ToolCall, not UserPromptSubmit:**
+- Agent autonomously calls `Bash` tool with `git commit` or `gh pr create`
+- UserPromptSubmit only triggers on direct user prompts, not tool calls
+- ToolCall hook intercepts actual tool execution, catching all commits/PRs
+
 #### Pre-Commit Validation
 
-**Triggers on:** `git commit`, `commit changes`, `create commit`
+**Triggers on:** Bash tool call containing `git commit` command
 
 **Checks:**
 1. **Tests pass** - Runs `npm test`
@@ -55,7 +60,7 @@ These hooks were created to ensure Claude Code agents consistently follow projec
 
 #### Pre-PR Validation
 
-**Triggers on:** `gh pr create`, `create pr`, `create pull request`, `pull request`
+**Triggers on:** Bash tool call containing `gh pr create` command
 
 **Checks:**
 1. **Tests pass** - `npm test`
@@ -86,9 +91,9 @@ Claude Code hooks are shell scripts that execute at specific points:
    - Script: `session-start.sh`
    - Output: Shown to agent in context
 
-2. **UserPromptSubmit** - Before processing user input
-   - Script: `user-prompt-submit.sh`
-   - Input: User's prompt text
+2. **ToolCall** - Before tool execution
+   - Script: `tool-call.sh`
+   - Input: Tool name and parameters (JSON)
    - Can block execution with `exit 1`
 
 ## ⚙️ Setup Requirements
@@ -117,12 +122,12 @@ This is intentional behavior - commits/PRs should only happen when tests can run
 
 ### Test Pre-Commit Hook
 ```bash
-echo "git commit -m 'test'" | ./.claude/hooks/user-prompt-submit.sh
+./.claude/hooks/tool-call.sh "Bash" '{"command": "git commit -m \"test\""}'
 ```
 
 ### Test Pre-PR Hook
 ```bash
-echo "gh pr create" | ./.claude/hooks/user-prompt-submit.sh
+./.claude/hooks/tool-call.sh "Bash" '{"command": "gh pr create --title \"Test\""}'
 ```
 
 ## 📊 Regulation Groups
@@ -132,8 +137,8 @@ Hooks enforce regulations grouped by context:
 | Group | Context | Hook | Priority |
 |-------|---------|------|----------|
 | **A** | Session Start | `session-start.sh` | ⭐⭐⭐ Critical |
-| **E** | Pre-Commit | `user-prompt-submit.sh` | ⭐⭐⭐ Critical |
-| **F** | Pre-PR | `user-prompt-submit.sh` | ⭐⭐ High |
+| **E** | Pre-Commit | `tool-call.sh` | ⭐⭐⭐ Critical |
+| **F** | Pre-PR | `tool-call.sh` | ⭐⭐ High |
 
 ### Future Enhancements (Not Yet Implemented)
 

@@ -1,14 +1,27 @@
 #!/bin/bash
-# UserPromptSubmit Hook - Pre-Commit and Pre-PR validation
-# This hook executes before user prompts are processed
+# ToolCall Hook - Pre-Commit and Pre-PR validation
+# This hook executes before tool calls (specifically Bash tool)
 
-# Get the user prompt from stdin or first argument
-PROMPT="${1:-$(cat)}"
+# ToolCall hook receives:
+# $1 = tool name (e.g., "Bash", "Write", "Edit")
+# $2 = tool parameters (JSON)
+
+TOOL_NAME="$1"
+TOOL_PARAMS="$2"
+
+# Only process Bash tool calls
+if [ "$TOOL_NAME" != "Bash" ]; then
+  exit 0
+fi
+
+# Extract command from JSON parameters
+# Expected format: {"command": "git commit -m '...'", ...}
+COMMAND=$(echo "$TOOL_PARAMS" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"\(.*\)"/\1/')
 
 # ============================================================================
 # PRE-COMMIT VALIDATION
 # ============================================================================
-if echo "$PROMPT" | grep -qiE "git commit|commit.*changes|create.*commit"; then
+if echo "$COMMAND" | grep -qE "git[[:space:]]+commit"; then
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "🚨 PRE-COMMIT VALIDATION"
@@ -76,7 +89,7 @@ fi
 # ============================================================================
 # PRE-PR VALIDATION
 # ============================================================================
-if echo "$PROMPT" | grep -qiE "gh pr create|create.*pr|create.*pull.*request|pull request"; then
+if echo "$COMMAND" | grep -qE "gh[[:space:]]+pr[[:space:]]+create"; then
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "🎯 PR STRUCTURE REMINDER"
@@ -149,5 +162,5 @@ if echo "$PROMPT" | grep -qiE "gh pr create|create.*pr|create.*pull.*request|pul
   echo ""
 fi
 
-# Allow the prompt to continue
+# Allow the tool call to continue
 exit 0
