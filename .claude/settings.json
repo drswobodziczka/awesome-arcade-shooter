@@ -55,5 +55,47 @@
     "Stop": []
   },
 
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": [],
+    "allowUnsandboxedCommands": false,
+
+    "network": {
+      "allowedDomains": [
+        "*.npmjs.org",
+        "registry.npmjs.org",
+        "*.github.com",
+        "api.github.com",
+        "raw.githubusercontent.com"
+      ],
+      "deniedDomains": [],
+      "allowUnixSockets": [],
+      "allowLocalBinding": true
+    },
+
+    "denyRead": [
+      "~/.ssh/**",
+      "~/.aws/**",
+      "/etc/passwd",
+      "/etc/shadow"
+    ],
+
+    "allowWrite": [
+      "./src/**",
+      "./PoCs/**",
+      "./dist/**",
+      "./build/**",
+      "./.claude/**",
+      "./docs/**",
+      "./tests/**"
+    ],
+
+    "denyWrite": [
+      "./node_modules/**",
+      "./.git/**"
+    ]
+  },
+
   "cleanupPeriodDays": 30
 }
