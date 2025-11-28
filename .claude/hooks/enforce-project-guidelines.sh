@@ -1,6 +1,6 @@
 #!/bin/bash
-# SessionStart Hook - Load project regulations
-# This hook executes at the beginning of each Claude Code session
+# Enforce Project Guidelines Hook - SessionStart event
+# Displays mandatory project regulations at the beginning of each session
 
 cat << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

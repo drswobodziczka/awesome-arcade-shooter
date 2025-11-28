@@ -4,7 +4,7 @@ Automatic enforcement of project regulations during development.
 
 ## Hooks
 
-**`session-start.sh`**
+**`enforce-project-guidelines.sh`**
 Displays mandatory guidelines at session start (CLAUDE.md, coding/testing guidelines).
 
 **`pre-commit.sh`**
