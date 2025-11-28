@@ -7,7 +7,7 @@ Automatic enforcement of project regulations during development.
 **`session-start.sh`**
 Displays mandatory guidelines at session start (CLAUDE.md, coding/testing guidelines).
 
-**`tool-call.sh`**
+**`pre-tool-use.sh`**
 Blocks `git commit` and `gh pr create` if tests or build fail.
 
 ---

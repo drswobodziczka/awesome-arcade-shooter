@@ -1,22 +1,18 @@
 #!/bin/bash
-# ToolCall Hook - Pre-Commit and Pre-PR validation
-# This hook executes before tool calls (specifically Bash tool)
+# PreToolUse Hook - Pre-Commit and Pre-PR validation
+# This hook executes before Bash tool execution
 
-# ToolCall hook receives:
-# $1 = tool name (e.g., "Bash", "Write", "Edit")
-# $2 = tool parameters (JSON)
+# Read JSON from stdin
+# Format: {"tool_input": {"command": "git commit ..."}, "tool_name": "Bash", ...}
+INPUT=$(cat)
 
-TOOL_NAME="$1"
-TOOL_PARAMS="$2"
+# Extract command from tool_input.command
+COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/"command"[[:space:]]*:[[:space:]]*"\(.*\)"/\1/')
 
-# Only process Bash tool calls
-if [ "$TOOL_NAME" != "Bash" ]; then
+# If no command found, allow execution
+if [ -z "$COMMAND" ]; then
   exit 0
 fi
-
-# Extract command from JSON parameters
-# Expected format: {"command": "git commit -m '...'", ...}
-COMMAND=$(echo "$TOOL_PARAMS" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"\(.*\)"/\1/')
 
 # ============================================================================
 # PRE-COMMIT VALIDATION
@@ -47,7 +43,7 @@ if echo "$COMMAND" | grep -qE "git[[:space:]]+commit"; then
     echo "Run 'npm test' to see details."
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    exit 1
+    exit 2  # Exit code 2 = blocking error
   fi
 
   # Check if build passes
@@ -66,7 +62,7 @@ if echo "$COMMAND" | grep -qE "git[[:space:]]+commit"; then
     echo "Run 'npm run build' to see details."
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    exit 1
+    exit 2  # Exit code 2 = blocking error
   fi
 
   echo ""
@@ -125,7 +121,7 @@ if echo "$COMMAND" | grep -qE "gh[[:space:]]+pr[[:space:]]+create"; then
     echo "        ✅ Tests pass"
   else
     echo "        ❌ Tests FAIL - Fix before creating PR!"
-    exit 1
+    exit 2  # Exit code 2 = blocking error
   fi
 
   # Check build
@@ -134,7 +130,7 @@ if echo "$COMMAND" | grep -qE "gh[[:space:]]+pr[[:space:]]+create"; then
     echo "        ✅ Build successful"
   else
     echo "        ❌ Build FAILS - Fix before creating PR!"
-    exit 1
+    exit 2  # Exit code 2 = blocking error
   fi
 
   # Check branch name

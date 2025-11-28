@@ -1,10 +1,25 @@
 {
   "hooks": {
-    "session-start": {
-      "command": "./.claude/hooks/session-start.sh"
-    },
-    "tool-call": {
-      "command": "./.claude/hooks/tool-call.sh"
-    }
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-tool-use.sh"
+          }
+        ]
+      }
+    ]
   }
 }
