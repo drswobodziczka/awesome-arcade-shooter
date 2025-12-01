@@ -48,7 +48,18 @@ Odpalanie wielu agentów/sesji jest wygodniejsze niż w Warpie
 - Lepszy UX dla równoległych tasków
 - Łatwiejsze zarządzanie wieloma kontekstami
 
-### 5. Browser-Based Workflow
+### 5. Concurrent Multi-Branch Development
+
+(+) Wielu agentów może pracować jednocześnie na wielu branchach, co lokalnie, nawet przy wielu agentach, byłoby niemożliwe
+
+- Każda sesja CC Web działa w izolowanym sandboxie z własnym checkout
+- Możliwość równoległego developmentu na różnych feature branches
+- Lokalnie: single working directory = tylko jeden branch na raz
+- CC Web: multiple sandboxes = wiele branchy jednocześnie
+- Drastycznie przyspiesza workflow przy pracy nad wieloma feature'ami równolegle
+- Eliminuje konieczność git stash/checkout/merge dance przy przełączaniu kontekstu
+
+### 6. Browser-Based Workflow
 
 Podoba się praca w CC Web w przeglądarce
 
