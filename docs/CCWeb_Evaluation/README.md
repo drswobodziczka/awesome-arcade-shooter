@@ -258,6 +258,15 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego testowania przez użytkownika lub instrukcji user-provided o błędach/wynikach
 - Utrudnia debugging i iteracyjne poprawianie kodu
 
+### 16. No Bash Mode
+
+(-) Brak bash mode `!` jak w CC CLI.
+
+- Nie można szybko przełączyć się w tryb bash-only
+- Brak możliwości wykonywania czystych sekwencji poleceń shell bez interpretacji przez LLM
+- Wymaga zawsze pełnego kontekstu agenta nawet dla prostych operacji terminalowych
+- Zmniejsza efektywność przy prostych operacjach systemowych
+
 ## Unknown / To Be Tested (?)
 
 ### 1. Mobile/Android Support
