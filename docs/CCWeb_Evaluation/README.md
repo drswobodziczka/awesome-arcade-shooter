@@ -294,3 +294,14 @@ Nie wiadomo jak działa na Androidzie
 (?) Teleport do CLI
 
 - Niejasna funkcjonalność lub brak możliwości przełączenia się do CLI mid-session
+
+### 4. Configuration Files Support
+
+(?) Możliwość konfiguracji poprzez pliki konfiguracyjne: claude.json, settings.json, .mcp.config.json
+
+- Czy CC Web wspiera config files w repo (claude.json, settings.json)?
+- Czy można definiować MCP servers przez .mcp.config.json w sandboxie?
+- Jak wygląda persistence i priority konfiguracji (repo vs user settings)?
+- Czy config z repo override'uje globalne settings użytkownika?
+- Potencjalnie pozwoliłoby na project-specific configuration bez manual setup
+- Wymaga testów i weryfikacji dokumentacji
