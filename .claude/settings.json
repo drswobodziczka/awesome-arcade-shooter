@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "permissions": {
+    "defaultMode": "default",
+
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(su:*)",
+      "Bash(ssh:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git reflog expire:*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.key)",
+      "Read(**/.aws/**)",
+      "Edit(package-lock.json)",
+      "Edit(pnpm-lock.yaml)"
+    ],
+
+    "allow": [
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(npm:*)",
+      "Bash(find:*)",
+      "Read(**/*.md)",
+      "Read(**/tsconfig.json)",
+      "Read(**/package.json)",
+      "Read(**/vite.config.*)",
+      "Read(**/vitest.config.*)",
+      "Read(**/.github/**)"
+    ],
+
+    "ask": [
+      "Bash(*)",
+      "Bash(rm:*)",
+      "Edit()",
+      "Write()",
+      "WebFetch()",
+      "WebSearch()"
+    ],
+
+    "disableBypassPermissionsMode": false
+  },
+
+  "env": {
+    "ANTHROPIC_MODEL": "claude-sonnet-4-5-20250929",
+    "BASH_DEFAULT_TIMEOUT_MS": "30000",
+    "NODE_ENV": "development"
+  },
+
+  "hooks": {
+    "SessionStart": [],
+    "PostToolUse": [],
+    "Stop": []
+  },
+
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": [],
+    "allowUnsandboxedCommands": false,
+
+    "network": {
+      "allowedDomains": [
+        "*.npmjs.org",
+        "registry.npmjs.org",
+        "*.github.com",
+        "api.github.com",
+        "raw.githubusercontent.com"
+      ],
+      "deniedDomains": [],
+      "allowUnixSockets": [],
+      "allowLocalBinding": true
+    },
+
+    "denyRead": [
+      "~/.ssh/**",
+      "~/.aws/**",
+      "/etc/passwd",
+      "/etc/shadow"
+    ],
+
+    "allowWrite": [
+      "./src/**",
+      "./PoCs/**",
+      "./dist/**",
+      "./build/**",
+      "./.claude/**",
+      "./docs/**",
+      "./tests/**"
+    ],
+
+    "denyWrite": [
+      "./node_modules/**",
+      "./.git/**"
+    ]
+  },
+
+  "cleanupPeriodDays": 30
+}
