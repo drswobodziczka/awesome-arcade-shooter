@@ -185,6 +185,18 @@ Nie wiadomo jak działa na Androidzie
 - Brak informacji o rollout na mobile
 - Potencjalnie użyteczne dla pracy w drodze
 - Wymaga testów po udostępnieniu
+
+### 2. Database Support in Sandbox
+
+(?) Można sobie odpalać bazy danych w sandboxie CC Web - ciekawe jakie są use case'y?
+
+- Lokalne testowanie bez setup na maszynie developerskiej
+- Izolacja - każda sesja ma czystą instancję
+- Potencjalne automatyczne cleanup przy zamknięciu sesji
+- Czy jest wsparcie dla migracji i seedingu danych?
+- Performance implications w sandboxie
+- Data persistence - co się dzieje z danymi po sesji?
+- Czy można to używać do dev work czy tylko testowania?
    =======
 
 ### 3. Single PR Per Session Limitation
