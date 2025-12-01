@@ -48,7 +48,18 @@ Odpalanie wielu agentów/sesji jest wygodniejsze niż w Warpie
 - Lepszy UX dla równoległych tasków
 - Łatwiejsze zarządzanie wieloma kontekstami
 
-### 5. Browser-Based Workflow
+### 5. Concurrent Multi-Branch Development
+
+(+) Wielu agentów może pracować jednocześnie na wielu branchach, co lokalnie, nawet przy wielu agentach, byłoby niemożliwe
+
+- Każda sesja CC Web działa w izolowanym sandboxie z własnym checkout
+- Możliwość równoległego developmentu na różnych feature branches
+- Lokalnie: single working directory = tylko jeden branch na raz
+- CC Web: multiple sandboxes = wiele branchy jednocześnie
+- Drastycznie przyspiesza workflow przy pracy nad wieloma feature'ami równolegle
+- Eliminuje konieczność git stash/checkout/merge dance przy przełączaniu kontekstu
+
+### 6. Browser-Based Workflow
 
 Podoba się praca w CC Web w przeglądarce
 
@@ -121,6 +132,25 @@ Podoba się praca w CC Web w przeglądarce
 - Umożliwia długie, iteracyjne sesje bez utraty pracy
 - Graceful degradation zamiast sudden context loss
 - Transparentne dla użytkownika - sesja po prostu trwa
+
+### 14. VM Tools Discovery
+
+(+) Możemy sobie zobaczyć wszystkie narzędzia dostępne w VM-ce używając `check-tools`.
+
+- Łatwe odkrywanie dostępnych narzędzi w sandboxie
+- Transparentność środowiska developerskiego
+- Pomocne przy debugowaniu i eksploracji capabilities
+- Szybka weryfikacja co jest zainstalowane w VM
+
+### 15. VM Environment Inspection
+
+(+) Możemy zobaczyć co jest na VM-ce, agent odpowiada (ale dalej lepszy byłby bashmode).
+
+- Agent może pokazać zawartość VM i stan środowiska
+- Daje visibility do sandbox environment
+- Umożliwia weryfikację setup przed rozpoczęciem pracy
+- Trade-off: wymaga interakcji z agentem zamiast bezpośredniego bash access
+- Bash mode byłby wydajniejszy dla tego use case'u
 
 ## Limitations & Issues (-)
 
@@ -247,6 +277,15 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego testowania przez użytkownika lub instrukcji user-provided o błędach/wynikach
 - Utrudnia debugging i iteracyjne poprawianie kodu
 
+### 16. No Bash Mode
+
+(-) Brak bash mode `!` jak w CC CLI.
+
+- Nie można szybko przełączyć się w tryb bash-only
+- Brak możliwości wykonywania czystych sekwencji poleceń shell bez interpretacji przez LLM
+- Wymaga zawsze pełnego kontekstu agenta nawet dla prostych operacji terminalowych
+- Zmniejsza efektywność przy prostych operacjach systemowych
+
 ## Unknown / To Be Tested (?)
 
 ### 1. Mobile/Android Support
@@ -274,3 +313,14 @@ Nie wiadomo jak działa na Androidzie
 (?) Teleport do CLI
 
 - Niejasna funkcjonalność lub brak możliwości przełączenia się do CLI mid-session
+
+### 4. Configuration Files Support
+
+(?) Możliwość konfiguracji poprzez pliki konfiguracyjne: claude.json, settings.json, .mcp.config.json
+
+- Czy CC Web wspiera config files w repo (claude.json, settings.json)?
+- Czy można definiować MCP servers przez .mcp.config.json w sandboxie?
+- Jak wygląda persistence i priority konfiguracji (repo vs user settings)?
+- Czy config z repo override'uje globalne settings użytkownika?
+- Potencjalnie pozwoliłoby na project-specific configuration bez manual setup
+- Wymaga testów i weryfikacji dokumentacji
