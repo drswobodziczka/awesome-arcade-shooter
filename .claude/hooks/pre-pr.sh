@@ -21,6 +21,9 @@ if [ -n "$CWD" ]; then
   cd "$CWD" || exit 2
 fi
 
+# Verbose logging (to stderr for visibility)
+echo "[HOOK] pre-pr.sh triggered" >&2
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🎯 PR STRUCTURE REMINDER"

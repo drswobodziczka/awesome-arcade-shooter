@@ -2,6 +2,9 @@
 # Enforce Project Guidelines Hook - SessionStart event
 # Displays mandatory project regulations at the beginning of each session
 
+# Verbose logging (to stderr for visibility)
+echo "[HOOK] enforce-project-guidelines.sh triggered" >&2
+
 cat << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎯 SESSION START - MUST READ PROJECT REGULATIONS
