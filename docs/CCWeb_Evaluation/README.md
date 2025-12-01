@@ -133,6 +133,25 @@ Podoba się praca w CC Web w przeglądarce
 - Graceful degradation zamiast sudden context loss
 - Transparentne dla użytkownika - sesja po prostu trwa
 
+### 14. VM Tools Discovery
+
+(+) Możemy sobie zobaczyć wszystkie narzędzia dostępne w VM-ce używając `check-tools`.
+
+- Łatwe odkrywanie dostępnych narzędzi w sandboxie
+- Transparentność środowiska developerskiego
+- Pomocne przy debugowaniu i eksploracji capabilities
+- Szybka weryfikacja co jest zainstalowane w VM
+
+### 15. VM Environment Inspection
+
+(+) Możemy zobaczyć co jest na VM-ce, agent odpowiada (ale dalej lepszy byłby bashmode).
+
+- Agent może pokazać zawartość VM i stan środowiska
+- Daje visibility do sandbox environment
+- Umożliwia weryfikację setup przed rozpoczęciem pracy
+- Trade-off: wymaga interakcji z agentem zamiast bezpośredniego bash access
+- Bash mode byłby wydajniejszy dla tego use case'u
+
 ## Limitations & Issues (-)
 
 ### 1. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands & No File Mentions
