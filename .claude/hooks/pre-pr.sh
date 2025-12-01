@@ -8,9 +8,17 @@ INPUT=$(cat)
 # Extract command from tool_input.command
 COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/"command"[[:space:]]*:[[:space:]]*"\(.*\)"/\1/')
 
+# Extract cwd (repo root) from JSON
+CWD=$(echo "$INPUT" | grep -o '"cwd"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/"cwd"[[:space:]]*:[[:space:]]*"\(.*\)"/\1/')
+
 # Only process gh pr create commands
 if ! echo "$COMMAND" | grep -qE "gh[[:space:]]+pr[[:space:]]+create"; then
   exit 0  # Not a PR creation command, allow execution
+fi
+
+# Change to repo root if cwd provided
+if [ -n "$CWD" ]; then
+  cd "$CWD" || exit 2
 fi
 
 echo ""
