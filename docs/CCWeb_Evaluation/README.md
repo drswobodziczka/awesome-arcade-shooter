@@ -124,13 +124,17 @@ Podoba się praca w CC Web w przeglądarce
 
 ## Limitations & Issues (-)
 
-### 1. No File Mentions / Slash Commands
+### 1. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands & No File Mentions
 
-Nie można mentionować plików, używać slash commands - przynajmniej nie bezpośrednio jak CC CLI
+Nie można mentionować plików, używać slash commands lub osobistych workflow w CC Web.
 
 - Brak @ mentions dla plików
 - Brak szybkich komend
-- Inna interakcja niż w CLI
+- Brak możliwości stosowania własnych promptów zdefiniowanych lokalnie
+- Wymusza kopiowanie promptów bezpośrednio do konwersacji lub wklejanie do repo
+- Brak możliwości automatyzacji czy integracji z własnymi narzędziami
+- Drastycznie zmniejsza produktywność przy pracy z recurring patterns/workflows
+- **Frustrujące ograniczenie** - kto używa workflow w CLI, będzie znacznie mniej produktywny w Web
 
 ### 2. Conversation Continuation UI Issue
 
@@ -139,21 +143,14 @@ Kontynuacja konwersacji zasłania wątek :D
 - UI problem z visibility
 - Utrudnia śledzenie poprzednich wiadomości
 
-### 3. No Multimodal in Continuations
-
-Nie działa multimodalnie w kontynuacji konwersacji
-
-- Nie można dodawać screenów w follow-ups
-- Tylko w pierwszej wiadomości
-
-### 4. No GitHub CLI Access
+### 3. No GitHub CLI Access
 
 CCWeb nie ma dostępu do `gh` CLI.
 
 - Nie może pobierać informacji o PR, issues, runs bezpośrednio z GitHub
 - Musi polegać na linkach od użytkownika lub fetch przez API
 
-### 5. No Direct Access to GitHub Actions Logs
+### 4. No Direct Access to GitHub Actions Logs
 
 CCWeb nie może automatycznie czytać errorów z failed builds.
 
@@ -164,17 +161,91 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 
 **Impact:** Workflow "build failed" → użytkownik musi ręcznie podać logi lub opisać problem.
 
-### 6. CRITICAL: wolno startujace sesje, zawieszajace sie sesje, sesje konczace sie bledem
+### 5. CRITICAL: wolno startujace sesje, zawieszajace sie sesje, sesje konczace sie bledem
 
-### 7. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands
+### 6. Single PR Per Session Limitation
 
-Nie można używać osobistych workflow lub slash commands w CC Web.
+(-) Jedna sesja może otworzyć tylko jeden PR, wyłącznie może to zrobić user klikając w button.
 
-- Brak możliwości stosowania własnych promptów zdefiniowanych lokalnie
-- Wymusza kopiowanie promptów bezpośrednio do konwersacji lub wklejanie do repo
-- Brak możliwości automatyzacji czy integracji z własnymi narzędziami
-- Drastycznie zmniejsza produktywność przy pracy z recurring patterns/workflows
-- **Frustrujące ograniczenie** - kto używa workflow w CLI, będzie znacznie mniej produktywny w Web
+- Brak możliwości tworzenia wielu PR w jednej sesji
+- Tylko user może utworzyć PR (przez UI button)
+- Ogranicza workflow przy pracy nad wieloma feature'ami
+
+### 7. Branch Management Issues
+
+(-) CC Web pierdoli czasem branche i w jednej sesji robi ich kilka.
+
+- Niejasne na jakim jesteśmy branchu w danym momencie
+- Do którego brancha jest PR?
+- Co się dzieje jak w sesji mamy kilka branchy i każda z PR - do którego przekieruje wówczas button "View PR"?
+
+**Impact:** Chaos w zarządzaniu branchami, nieprzewidywalność UI, trudności w śledzeniu stanu pracy.
+
+### 8. CLAUDE.MD Integration Issues
+
+(-) Nie ma możliwości pracy z CLAUDE.MD - '#' nie dodaje do pamięci.
+
+- Brak wsparcia dla slash command '#' do dodawania context z CLAUDE.MD
+- Ogranicza możliwość konfiguracji project-specific instructions
+
+### 9. No MCP and Tools Configuration
+
+(-!) Brak konfiguracji MCP i narzędzi.
+
+- Niemożność rozszerzenia capabilities przez MCP servers
+- Brak dostępu do custom tools
+- Ograniczona extensibility w porównaniu do desktop/CLI version
+
+### 10. Session Freezing Issues
+
+(-) Sesja się czasem zacina -- claude miał mieli retry connection i nic.
+
+- Sesja przestaje odpowiadać
+- Próby retry connection nie pomagają
+- Wymaga restart sesji
+
+### 11. False Rate Limit Messages
+
+(-) Durny i nieprawdziwy komunikat o rate limit.
+
+- Wyświetlają się błędne komunikaty o przekroczeniu limitu
+- Wprowadza w błąd użytkownika
+- Nie odzwierciedla rzeczywistego stanu
+
+### 12. Session Stop Delay
+
+(-) Jak się niechcący zacznie sesję to by zatrzymać trzeba czekać z 10 sekund.
+
+- Długi czas oczekiwania na zatrzymanie sesji
+- Brak natychmiastowego cancel
+- Frustrujące przy przypadkowym starcie
+
+### 13. No Conversation History Navigation
+
+(-) Nie ma opcji back in time w konwersacji.
+
+- Brak możliwości cofnięcia się do wcześniejszego stanu rozmowy
+- Nie można wrócić do poprzednich punktów w konwersacji
+- Brak undo/rollback functionality
+
+### 14. Model & Repository Selection Not Persisted
+
+(-) Zawsze zostaje model i repo ostatniego wyboru. Wolałbym żeby interfejs pamiętał wybory między konwersacjami i oknami CC Web
+
+- Brak zapamiętywania preferencji modelu między sesjami
+- Brak zapamiętywania wybranego repo między oknami
+- Wymaga ręcznego resetowania wyboru za każdym razem
+- Uciążliwe przy pracy z wieloma projektami/modelami
+
+### 15. Cannot Test Running Instances During Active Development
+
+(-) W trybie aktywnego rozwijania gałęzi nie możemy odpalić serwera, otworzyć przeglądarki i pozwolić agentowi samodzielnie testować aplikację.
+
+- Agent nie ma możliwości interaktywnego testowania w przeglądarce
+- Niemożność spawania i obserwacji działającej instancji aplikacji
+- Ogranicza feedback loop podczas development - agent nie widzi wyników swoich zmian w runtime
+- Wymaga ręcznego testowania przez użytkownika lub instrukcji user-provided o błędach/wynikach
+- Utrudnia debugging i iteracyjne poprawianie kodu
 
 ## Unknown / To Be Tested (?)
 
@@ -197,94 +268,9 @@ Nie wiadomo jak działa na Androidzie
 - Performance implications w sandboxie
 - Data persistence - co się dzieje z danymi po sesji?
 - Czy można to używać do dev work czy tylko testowania?
-   =======
 
-### 3. Single PR Per Session Limitation
-
-(-) Jedna sesja może otworzyć tylko jeden PR, wyłącznie może to zrobić user klikając w button.
-
-- Brak możliwości tworzenia wielu PR w jednej sesji
-- Tylko user może utworzyć PR (przez UI button)
-- Ogranicza workflow przy pracy nad wieloma feature'ami
-
-### 4. Branch Management Issues
-
-(-) CC Web pierdoli czasem branche i w jednej sesji robi ich kilka.
-
-- Niejasne na jakim jesteśmy branchu w danym momencie
-- Do którego brancha jest PR?
-- Co się dzieje jak w sesji mamy kilka branchy i każda z PR - do którego przekieruje wówczas button "View PR"?
-
-**Impact:** Chaos w zarządzaniu branchami, nieprzewidywalność UI, trudności w śledzeniu stanu pracy.
-
-### 5. CLAUDE.MD Integration Issues
-
-(-) Nie ma możliwości pracy z CLAUDE.MD - '#' nie dodaje do pamięci.
-
-- Brak wsparcia dla slash command '#' do dodawania context z CLAUDE.MD
-- Ogranicza możliwość konfiguracji project-specific instructions
-
-### 6. No MCP and Tools Configuration
-
-(-!) Brak konfiguracji MCP i narzędzi.
-
-- Niemożność rozszerzenia capabilities przez MCP servers
-- Brak dostępu do custom tools
-- Ograniczona extensibility w porównaniu do desktop/CLI version
-
-### 7. CLI Teleport (?)
+### 3. CLI Teleport (?)
 
 (?) Teleport do CLI
 
 - Niejasna funkcjonalność lub brak możliwości przełączenia się do CLI mid-session
-
-### 8. Session Freezing Issues
-
-(-) Sesja się czasem zacina -- claude miał mieli retry connection i nic.
-
-- Sesja przestaje odpowiadać
-- Próby retry connection nie pomagają
-- Wymaga restart sesji
-
-### 9. False Rate Limit Messages
-
-(-) Durny i nieprawdziwy komunikat o rate limit.
-
-- Wyświetlają się błędne komunikaty o przekroczeniu limitu
-- Wprowadza w błąd użytkownika
-- Nie odzwierciedla rzeczywistego stanu
-
-### 10. Session Stop Delay
-
-(-) Jak się niechcący zacznie sesję to by zatrzymać trzeba czekać z 10 sekund.
-
-- Długi czas oczekiwania na zatrzymanie sesji
-- Brak natychmiastowego cancel
-- Frustrujące przy przypadkowym starcie
-
-### 11. No Conversation History Navigation
-
-(-) Nie ma opcji back in time w konwersacji.
-
-- Brak możliwości cofnięcia się do wcześniejszego stanu rozmowy
-- Nie można wrócić do poprzednich punktów w konwersacji
-- Brak undo/rollback functionality
-
-### 12. Model & Repository Selection Not Persisted
-
-(-) Zawsze zostaje model i repo ostatniego wyboru. Wolałbym żeby interfejs pamiętał wybory między konwersacjami i oknami CC Web
-
-- Brak zapamiętywania preferencji modelu między sesjami
-- Brak zapamiętywania wybranego repo między oknami
-- Wymaga ręcznego resetowania wyboru za każdym razem
-- Uciążliwe przy pracy z wieloma projektami/modelami
-
-### 13. Cannot Test Running Instances During Active Development
-
-(-) W trybie aktywnego rozwijania gałęzi nie możemy odpalić serwera, otworzyć przeglądarki i pozwolić agentowi samodzielnie testować aplikację.
-
-- Agent nie ma możliwości interaktywnego testowania w przeglądarce
-- Niemożność spawania i obserwacji działającej instancji aplikacji
-- Ogranicza feedback loop podczas development - agent nie widzi wyników swoich zmian w runtime
-- Wymaga ręcznego testowania przez użytkownika lub instrukcji user-provided o błędach/wynikach
-- Utrudnia debugging i iteracyjne poprawianie kodu
