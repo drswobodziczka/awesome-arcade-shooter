@@ -152,6 +152,26 @@ Podoba się praca w CC Web w przeglądarce
 - Trade-off: wymaga interakcji z agentem zamiast bezpośredniego bash access
 - Bash mode byłby wydajniejszy dla tego use case'u
 
+### 16. Opus Model for Planning - Pro Users
+
+(+) Wreszcie Opus do planowania dla pro users
+
+- Dostęp do Opus modelu dla bardziej zaawansowanego planowania
+- Znacznie lepsza jakość planów i analizy dla profesjonalnych use case'ów
+- Opus dostarcza głębokie zrozumienie kontekstu projektu
+- Zwiększa efektywność pracy dla zaawansowanych użytkowników
+
+### 17. Convenient Multi-Repository Workflow
+
+(+) Wygodne do pracy z wieloma repozytoriami jednoczesnie
+
+- Każda sesja CC Web ma niezależny sandbox z własnym checkout
+- Możliwość pracy nad wieloma projektami równolegle w różnych tabach/sesjach
+- Łatwe przełączanie między repozytoriami bez lokalnych konfliktów
+- Eliminuje problemy z single working directory - każde repo izolowane
+- Idealnie dla maintenerów czy konsultantów pracujących nad wieloma projektami
+- Znacznie wygodniejsze niż zarządzanie wieloma lokalnymi workspaces
+
 ## Limitations & Issues (-)
 
 ### 1. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands & No File Mentions
