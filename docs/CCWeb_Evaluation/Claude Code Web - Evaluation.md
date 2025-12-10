@@ -1,5 +1,9 @@
 # Claude Code Web - Evaluation Notes
 
+```sh
+
+```
+
 ## Strengths (+)
 
 ### 1. Excellent Repository Context Awareness
@@ -93,11 +97,13 @@ Podoba się praca w CC Web w przeglądarce
 (±) Workflow na totalnym automacie (pośredniczenie między agentami → tworzenie wymagań → requesty → review → CC Web fixes) jest mega szybki i działa, ale powoduje stres i niepewność.
 
 **Plusy:**
+
 - Prędkość jest bardzo wysoka
 - Workflow faktycznie działa
 - Automatyzacja całego cyklu development → review → fix
 
 **Minusy:**
+
 - Brak poczucia kontroli nad procesem
 - Nie do końca rozumiem jak budowane jest rozwiązanie
 - Stres i niepewność wynikające z braku transparentności procesu
@@ -191,6 +197,7 @@ Podoba się praca w CC Web w przeglądarce
 Nie można używać slash commands ani mentionować plików w CC Web.
 
 **Slash Commands:**
+
 - CC Web nie skanuje `.claude/commands/` z repo - nawet gdy repo jest sklonowane w sandboxie
 - Brak autocomplete/listingu dostępnych commandów (wpisując "/" nic się nie pokazuje)
 - Slash commands zdefiniowane w repozytorium nie działają
@@ -198,6 +205,7 @@ Nie można używać slash commands ani mentionować plików w CC Web.
 - Eliminuje automatyzację i recurring workflows
 
 **File Mentions:**
+
 - Brak @ mentions dla plików
 - Brak możliwości stosowania własnych promptów zdefiniowanych lokalnie
 - Wymusza kopiowanie promptów bezpośrednio do konwersacji
