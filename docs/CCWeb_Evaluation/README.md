@@ -213,10 +213,13 @@ Kontynuacja konwersacji zasłania wątek :D
 
 ### 3. No GitHub CLI Access
 
-CCWeb nie ma dostępu do `gh` CLI.
+(-) CCWeb nie ma dostępu do `gh` CLI - nawet z ustawionymi permissions
 
+- Brak `gh` CLI w sandboxie, mimo że można ustawić permissions
+- Limitacja sandbox, nie kwestia uprawnień
 - Nie może pobierać informacji o PR, issues, runs bezpośrednio z GitHub
 - Musi polegać na linkach od użytkownika lub fetch przez API
+- Zmniejsza automatyzację GitHub workflows
 
 ### 4. No Direct Access to GitHub Actions Logs
 
