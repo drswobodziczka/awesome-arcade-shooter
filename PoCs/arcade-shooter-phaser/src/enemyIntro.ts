@@ -4,8 +4,8 @@
  * Handles first-encounter presentation with visual preview and narrative description.
  */
 
-import Phaser from 'phaser';
-import { EnemyType, getEnemyProperties, getEnemyMetadata } from './enemies';
+import Phaser from "phaser";
+import { EnemyType, getEnemyProperties, getEnemyMetadata } from "./enemies";
 
 /**
  * Draws an enlarged enemy preview using Phaser graphics.
@@ -31,34 +31,40 @@ function drawEnemyPreview(
   const scale = previewSize / props.size;
   const scaledSize = props.size * scale;
 
-  // Draw triangle for enemy
-  const triangle = scene.add.triangle(
-    x,
-    y,
-    0, scaledSize,                    // bottom point
-    -scaledSize/2, 0,                 // top-left
-    scaledSize/2, 0,                  // top-right
-    parseInt(props.color.replace('#', ''), 16)
-  );
-  objects.push(triangle);
-
-  // Add outline for better visibility
+  // zamiast scene.add.triangle(...)
   const graphics = scene.add.graphics();
+
+  // Fill (czerwony)
+  graphics.fillStyle(parseInt(props.color.replace("#", ""), 16), 1);
+  graphics.beginPath();
+  graphics.moveTo(x - scaledSize / 2, y - scaledSize / 2); // lewy góra (podstawa)
+  graphics.lineTo(x + scaledSize / 2, y - scaledSize / 2); // prawy góra (podstawa)
+  graphics.lineTo(x, y + scaledSize / 2); // dół środek (wierzchołek)
+  graphics.closePath();
+  graphics.fillPath();
+
+  // Outline (szary/ biały)
   graphics.lineStyle(2, 0xffffff, 0.3);
   graphics.strokeTriangle(
-    x - scaledSize/2, y,           // top-left
-    x + scaledSize/2, y,           // top-right
-    x, y + scaledSize              // bottom point
+    x - scaledSize / 2,
+    y - scaledSize / 2,
+    x + scaledSize / 2,
+    y - scaledSize / 2,
+    x,
+    y + scaledSize / 2
   );
+
+  objects.push(graphics);
+
   objects.push(graphics);
 
   // Add HP indicator for TANK
   if (type === EnemyType.TANK) {
     const hpText = scene.add.text(x, y + scaledSize + 15, `HP: ${props.hp}`, {
-      fontSize: '20px',
-      color: '#ffffff',
-      fontFamily: 'Arial',
-      fontStyle: 'bold',
+      fontSize: "20px",
+      color: "#ffffff",
+      fontFamily: "Arial",
+      fontStyle: "bold",
     });
     hpText.setOrigin(0.5, 0);
     objects.push(hpText);
@@ -80,14 +86,14 @@ export function showEnemyIntroduction(
   type: EnemyType,
   onClose: () => void
 ): void {
-  const modal = document.getElementById('enemyIntroModal');
-  const nameEl = document.getElementById('enemyName');
-  const descEl = document.getElementById('enemyDescription');
-  const closeBtn = document.getElementById('closeIntroBtn');
-  const previewContainer = document.getElementById('enemyPreviewPhaser');
+  const modal = document.getElementById("enemyIntroModal");
+  const nameEl = document.getElementById("enemyName");
+  const descEl = document.getElementById("enemyDescription");
+  const closeBtn = document.getElementById("closeIntroBtn");
+  const previewContainer = document.getElementById("enemyPreviewPhaser");
 
   if (!modal || !previewContainer || !nameEl || !descEl || !closeBtn) {
-    console.error('Enemy introduction modal elements not found');
+    console.error("Enemy introduction modal elements not found");
     onClose();
     return;
   }
@@ -100,7 +106,7 @@ export function showEnemyIntroduction(
   descEl.textContent = metadata.description;
 
   // Clear previous preview
-  previewContainer.innerHTML = '';
+  previewContainer.innerHTML = "";
 
   let previewGame: Phaser.Game | null = null;
 
@@ -110,35 +116,35 @@ export function showEnemyIntroduction(
       type: Phaser.AUTO,
       width: 200,
       height: 200,
-      parent: 'enemyPreviewPhaser',
-      backgroundColor: '#16213e',
+      parent: "enemyPreviewPhaser",
+      backgroundColor: "#16213e",
       scene: {
-        create: function(this: Phaser.Scene) {
+        create: function (this: Phaser.Scene) {
           const centerX = this.scale.width / 2;
           const centerY = this.scale.height / 2;
           drawEnemyPreview(this, type, centerX, centerY);
-        }
+        },
       },
     };
 
     previewGame = new Phaser.Game(previewConfig);
   } catch (error) {
-    console.error('Failed to create Phaser preview game:', error);
+    console.error("Failed to create Phaser preview game:", error);
     // Continue showing modal even if preview fails
   }
 
   // Show modal
-  modal.classList.add('visible');
+  modal.classList.add("visible");
 
   // Close handlers with proper cleanup
   const closeModal = () => {
     try {
       // Remove modal visibility
-      modal.classList.remove('visible');
+      modal.classList.remove("visible");
 
       // Clean up event listeners
-      document.removeEventListener('keydown', keyHandler);
-      closeBtn.removeEventListener('click', closeModal);
+      document.removeEventListener("keydown", keyHandler);
+      closeBtn.removeEventListener("click", closeModal);
 
       // Destroy preview game if it exists
       if (previewGame) {
@@ -146,7 +152,7 @@ export function showEnemyIntroduction(
         previewGame = null;
       }
     } catch (error) {
-      console.error('Error closing enemy introduction modal:', error);
+      console.error("Error closing enemy introduction modal:", error);
     } finally {
       // Always call onClose to resume game, even if cleanup fails
       onClose();
@@ -154,7 +160,7 @@ export function showEnemyIntroduction(
   };
 
   const keyHandler = (e: KeyboardEvent) => {
-    if (e.code === 'Enter') {
+    if (e.code === "Enter") {
       e.preventDefault();
       closeModal();
     }
@@ -162,10 +168,10 @@ export function showEnemyIntroduction(
 
   // Register close handlers
   try {
-    closeBtn.addEventListener('click', closeModal);
-    document.addEventListener('keydown', keyHandler);
+    closeBtn.addEventListener("click", closeModal);
+    document.addEventListener("keydown", keyHandler);
   } catch (error) {
-    console.error('Error registering event handlers:', error);
+    console.error("Error registering event handlers:", error);
     // If we can't register handlers, close immediately
     closeModal();
   }
@@ -178,7 +184,10 @@ export function showEnemyIntroduction(
  * @param encounteredTypes - Set of previously encountered enemy types
  * @returns true if this is first encounter, false otherwise
  */
-export function isFirstEncounter(type: EnemyType, encounteredTypes: Set<EnemyType>): boolean {
+export function isFirstEncounter(
+  type: EnemyType,
+  encounteredTypes: Set<EnemyType>
+): boolean {
   return !encounteredTypes.has(type);
 }
 
@@ -188,6 +197,9 @@ export function isFirstEncounter(type: EnemyType, encounteredTypes: Set<EnemyTyp
  * @param type - Enemy type to mark
  * @param encounteredTypes - Set of previously encountered enemy types (mutated)
  */
-export function markAsEncountered(type: EnemyType, encounteredTypes: Set<EnemyType>): void {
+export function markAsEncountered(
+  type: EnemyType,
+  encounteredTypes: Set<EnemyType>
+): void {
   encounteredTypes.add(type);
 }

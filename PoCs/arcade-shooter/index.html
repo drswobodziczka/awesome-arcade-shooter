@@ -33,9 +33,11 @@
       pointer-events: none;
     }
     #score {
-      color: #e94560;
+      color: #00d4ff;
       font-size: 24px;
       margin: 10px 0;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
     }
 
     /* Enemy Introduction Modal */
@@ -201,8 +203,8 @@
   <div id="gameContainer">
     <div id="score">Score: 0</div>
     <canvas id="gameCanvas" class="disabled" width="550" height="850"></canvas>
-    <div id="controls" style="color: #fff; margin-top: 10px; opacity: 0.5;">
-      Arrow keys: Move | Space: Shoot | <span style="color: #e94560;">Configure game below to start</span>
+    <div id="controls" style="color: #00d4ff; margin-top: 10px; font-weight: bold;">
+      Arrow keys: Move | Space: Shoot | <span style="color: #ffd700;">Configure game below to start</span>
     </div>
 
     <div id="testPanel">
