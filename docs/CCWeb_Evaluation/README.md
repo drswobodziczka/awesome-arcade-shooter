@@ -320,15 +320,11 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 
 ### 17. No Session State Persistence Across Tabs
 
-(-) Brak persystencji ustawień między takami - refresh w innym tabie przejmuje ostatnio ustawione wartości
+(-) Brak persystencji ustawień między takami - refresh przejmuje ostatnio ustawione wartości
 
-- Jeśli pracujesz z wieloma takami CC Web jednocześnie (różne repo, modele, środowiska, sesje)
-- Refresh lub nawigacja w innym tabie może przejąć ostatnie globalne ustawienia
-- Ryzyko pomyłki - łatwo można pracować w złym kontekście
-- Brak indywidualnego stanu per-tab
-- Szczególnie problematyczne przy pracy nad wieloma projektami równolegle
-- Wymaga ręcznego resetowania ustawień po przełączeniu między takami
-- Niespójne zachowanie UI między takami
+- "Last setting wins" - może prowadzić do pracy w złym kontekście
+- Problematyczne przy pracy z wieloma repo/środowiskami jednocześnie
+- Ryzyko commitowania do złego brancha czy z błędnymi zmiennymi
 
 ## Unknown / To Be Tested (?)
 
