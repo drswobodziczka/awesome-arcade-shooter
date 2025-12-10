@@ -152,17 +152,55 @@ Podoba się praca w CC Web w przeglądarce
 - Trade-off: wymaga interakcji z agentem zamiast bezpośredniego bash access
 - Bash mode byłby wydajniejszy dla tego use case'u
 
+### 16. Opus Model for Planning - Pro Users
+
+(+) Wreszcie Opus do planowania dla pro users
+
+- Dostęp do Opus modelu dla bardziej zaawansowanego planowania
+- Znacznie lepsza jakość planów i analizy dla profesjonalnych use case'ów
+- Opus dostarcza głębokie zrozumienie kontekstu projektu
+- Zwiększa efektywność pracy dla zaawansowanych użytkowników
+
+### 17. Convenient Multi-Repository Workflow
+
+(+) Wygodne do pracy z wieloma repozytoriami jednoczesnie
+
+- Każda sesja CC Web ma niezależny sandbox z własnym checkout
+- Możliwość pracy nad wieloma projektami równolegle w różnych tabach/sesjach
+- Łatwe przełączanie między repozytoriami bez lokalnych konfliktów
+- Eliminuje problemy z single working directory - każde repo izolowane
+- Idealnie dla maintenerów czy konsultantów pracujących nad wieloma projektami
+- Znacznie wygodniejsze niż zarządzanie wieloma lokalnymi workspaces
+
+### 18. Session-Level Environment Variables Configuration
+
+(+) Możliwość konfiguracji environment variables dla każdej sesji - URL-e, API keys, sekrety
+
+- Konfiguracja bezpośrednio w UI bez hardcodowania w kodzie
+- Każda sesja może mieć niezależne environment variables (dev/staging/prod)
+- Łatwe testowanie z różnymi konfiguracjami
+- Sekrety izolowane per-sesja - nie trafiają do repo
+- Agent automatycznie ma dostęp do skonfigurowanych zmiennych
+- Potencjał do konfiguracji całego środowiska per-sesja
+- Znacznie bezpieczniejsze niż przechowywanie secretów w kodzie
+
 ## Limitations & Issues (-)
 
-### 1. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands & No File Mentions
+### 1. (!) CRITICAL: No Slash Commands & File Mentions Support
 
-Nie można mentionować plików, używać slash commands lub osobistych workflow w CC Web.
+Nie można używać slash commands ani mentionować plików w CC Web.
 
+**Slash Commands:**
+- CC Web nie skanuje `.claude/commands/` z repo - nawet gdy repo jest sklonowane w sandboxie
+- Brak autocomplete/listingu dostępnych commandów (wpisując "/" nic się nie pokazuje)
+- Slash commands zdefiniowane w repozytorium nie działają
+- Działa w CC CLI i lokalnie, ale nie w web interface
+- Eliminuje automatyzację i recurring workflows
+
+**File Mentions:**
 - Brak @ mentions dla plików
-- Brak szybkich komend
 - Brak możliwości stosowania własnych promptów zdefiniowanych lokalnie
-- Wymusza kopiowanie promptów bezpośrednio do konwersacji lub wklejanie do repo
-- Brak możliwości automatyzacji czy integracji z własnymi narzędziami
+- Wymusza kopiowanie promptów bezpośrednio do konwersacji
 - Drastycznie zmniejsza produktywność przy pracy z recurring patterns/workflows
 - **Frustrujące ograniczenie** - kto używa workflow w CLI, będzie znacznie mniej produktywny w Web
 
@@ -175,10 +213,13 @@ Kontynuacja konwersacji zasłania wątek :D
 
 ### 3. No GitHub CLI Access
 
-CCWeb nie ma dostępu do `gh` CLI.
+(-) CCWeb nie ma dostępu do `gh` CLI - nawet z ustawionymi permissions
 
+- Brak `gh` CLI w sandboxie, mimo że można ustawić permissions
+- Limitacja sandbox, nie kwestia uprawnień
 - Nie może pobierać informacji o PR, issues, runs bezpośrednio z GitHub
 - Musi polegać na linkach od użytkownika lub fetch przez API
+- Zmniejsza automatyzację GitHub workflows
 
 ### 4. No Direct Access to GitHub Actions Logs
 
@@ -211,14 +252,26 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 
 **Impact:** Chaos w zarządzaniu branchami, nieprzewidywalność UI, trudności w śledzeniu stanu pracy.
 
-### 8. CLAUDE.MD Integration Issues
+### 8. Primitive PR Creation - No Intelligent Title/Description Generation
+
+(-) Przycisk "Create PR" bierze jako tytuł initial session title wymyślony przez AI, brak inteligentnego tytułu na podstawie rzeczywistej pracy
+
+- Tytuł PR to nazwa sesji z pierwszego pytania (wymyślona przez AI na start)
+- Brak dynamicznego generowania tytułu na podstawie zmian w sesji
+- W wyniku dyskusji mogą się zeskalać zupełnie inne rzeczy niż initial temat
+- Brak inteligentnego systemu do opisu PR na podstawie wykonanej pracy
+- Brak analizy commity/zmian do wygenerowania sensownego PR description
+- Wymaga ręcznego edytowania PR title/description po utworzeniu
+- Bardzo uboga funkcjonalność w porównaniu do możliwości agenta
+
+### 9. CLAUDE.MD Integration Issues
 
 (-) Nie ma możliwości pracy z CLAUDE.MD - '#' nie dodaje do pamięci.
 
 - Brak wsparcia dla slash command '#' do dodawania context z CLAUDE.MD
 - Ogranicza możliwość konfiguracji project-specific instructions
 
-### 9. No MCP and Tools Configuration
+### 10. No MCP and Tools Configuration
 
 (-!) Brak konfiguracji MCP i narzędzi.
 
@@ -226,7 +279,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Brak dostępu do custom tools
 - Ograniczona extensibility w porównaniu do desktop/CLI version
 
-### 10. Session Freezing Issues
+### 11. Session Freezing Issues
 
 (-) Sesja się czasem zacina -- claude miał mieli retry connection i nic.
 
@@ -234,7 +287,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Próby retry connection nie pomagają
 - Wymaga restart sesji
 
-### 11. False Rate Limit Messages
+### 12. False Rate Limit Messages
 
 (-) Durny i nieprawdziwy komunikat o rate limit.
 
@@ -242,7 +295,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wprowadza w błąd użytkownika
 - Nie odzwierciedla rzeczywistego stanu
 
-### 12. Session Stop Delay
+### 13. Session Stop Delay
 
 (-) Jak się niechcący zacznie sesję to by zatrzymać trzeba czekać z 10 sekund.
 
@@ -250,7 +303,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Brak natychmiastowego cancel
 - Frustrujące przy przypadkowym starcie
 
-### 13. No Conversation History Navigation
+### 14. No Conversation History Navigation
 
 (-) Nie ma opcji back in time w konwersacji.
 
@@ -258,7 +311,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Nie można wrócić do poprzednich punktów w konwersacji
 - Brak undo/rollback functionality
 
-### 14. Model & Repository Selection Not Persisted
+### 15. Model & Repository Selection Not Persisted
 
 (-) Zawsze zostaje model i repo ostatniego wyboru. Wolałbym żeby interfejs pamiętał wybory między konwersacjami i oknami CC Web
 
@@ -267,7 +320,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego resetowania wyboru za każdym razem
 - Uciążliwe przy pracy z wieloma projektami/modelami
 
-### 15. Cannot Test Running Instances During Active Development
+### 16. Cannot Test Running Instances During Active Development
 
 (-) W trybie aktywnego rozwijania gałęzi nie możemy odpalić serwera, otworzyć przeglądarki i pozwolić agentowi samodzielnie testować aplikację.
 
@@ -277,7 +330,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego testowania przez użytkownika lub instrukcji user-provided o błędach/wynikach
 - Utrudnia debugging i iteracyjne poprawianie kodu
 
-### 16. No Bash Mode
+### 17. No Bash Mode
 
 (-) Brak bash mode `!` jak w CC CLI.
 
@@ -285,6 +338,24 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Brak możliwości wykonywania czystych sekwencji poleceń shell bez interpretacji przez LLM
 - Wymaga zawsze pełnego kontekstu agenta nawet dla prostych operacji terminalowych
 - Zmniejsza efektywność przy prostych operacjach systemowych
+
+### 18. No Session State Persistence Across Tabs
+
+(-) Brak persystencji ustawień między takami - refresh przejmuje ostatnio ustawione wartości
+
+- "Last setting wins" - może prowadzić do pracy w złym kontekście
+- Problematyczne przy pracy z wieloma repo/środowiskami jednocześnie
+- Ryzyko commitowania do złego brancha czy z błędnymi zmiennymi
+
+### 19. No Model Transparency Within Session
+
+(-) Brak widoczności, który model operuje daną sesją/konwersacją - niedotransparentne
+
+- Możesz wybrać model, ale nie widzisz który faktycznie operuje konwersacją
+- Brak historii zmian modelu w trakcie sesji
+- Jeśli zmienisz model mid-session, agent nie wyświetla tej informacji
+- Widoczność tylko dla potencjalnie nowej konwersacji, nie dla aktualnej
+- Może prowadzić do nieświadomych zmian behawior agenta w trakcie pracy
 
 ## Unknown / To Be Tested (?)
 
