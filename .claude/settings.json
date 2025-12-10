@@ -33,16 +33,15 @@
       "Read(**/package.json)",
       "Read(**/vite.config.*)",
       "Read(**/vitest.config.*)",
-      "Read(**/.github/**)"
+      "Read(**/.github/**)",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "WebSearch"
     ],
 
     "ask": [
-      "Bash(*)",
-      "Bash(rm:*)",
-      "Edit()",
-      "Write()",
-      "WebFetch()",
-      "WebSearch()"
+      "Bash(rm:*)"
     ],
 
     "disableBypassPermissionsMode": false
@@ -55,7 +54,31 @@
   },
 
   "hooks": {
-    "SessionStart": [],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/enforce-project-guidelines.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-commit.sh"
+          },
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-pr.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [],
     "Stop": []
   },
