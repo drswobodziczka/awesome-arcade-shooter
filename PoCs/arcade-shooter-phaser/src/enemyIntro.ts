@@ -31,32 +31,52 @@ function drawEnemyPreview(
   const scale = previewSize / props.size;
   const scaledSize = props.size * scale;
 
-  // zamiast scene.add.triangle(...)
+  // Create graphics for shape rendering
   const graphics = scene.add.graphics();
-
-  // Fill (czerwony)
-  graphics.fillStyle(parseInt(props.color.replace("#", ""), 16), 1);
-  graphics.beginPath();
-  graphics.moveTo(x - scaledSize / 2, y - scaledSize / 2); // lewy góra (podstawa)
-  graphics.lineTo(x + scaledSize / 2, y - scaledSize / 2); // prawy góra (podstawa)
-  graphics.lineTo(x, y + scaledSize / 2); // dół środek (wierzchołek)
-  graphics.closePath();
-  graphics.fillPath();
-
-  // Outline (szary/ biały)
-  graphics.lineStyle(2, 0xffffff, 0.3);
-  graphics.strokeTriangle(
-    x - scaledSize / 2,
-    y - scaledSize / 2,
-    x + scaledSize / 2,
-    y - scaledSize / 2,
-    x,
-    y + scaledSize / 2
-  );
-
   objects.push(graphics);
 
-  objects.push(graphics);
+  if (type === EnemyType.TELEPORT) {
+    // TELEPORT enemy - multicolored circle
+    const radius = scaledSize / 2;
+
+    // Outer body (Enemy color)
+    graphics.fillStyle(parseInt(props.color.replace("#", ""), 16), 1);
+    graphics.fillCircle(x, y, radius);
+
+    // Inner energy ring (Cyan for sci-fi effect)
+    graphics.fillStyle(0x00ffff, 0.8);
+    graphics.fillCircle(x, y, radius * 0.6);
+
+    // Core (White)
+    graphics.fillStyle(0xffffff, 1);
+    graphics.fillCircle(x, y, radius * 0.3);
+
+    // Outline
+    graphics.lineStyle(2, 0xffffff, 0.5);
+    graphics.strokeCircle(x, y, radius);
+  } else {
+    // STANDARD/OTHER enemies - Triangle pointing down
+
+    // Fill (color)
+    graphics.fillStyle(parseInt(props.color.replace("#", ""), 16), 1);
+    graphics.beginPath();
+    graphics.moveTo(x - scaledSize / 2, y - scaledSize / 2); // top-left (base)
+    graphics.lineTo(x + scaledSize / 2, y - scaledSize / 2); // top-right (base)
+    graphics.lineTo(x, y + scaledSize / 2); // bottom-center (tip)
+    graphics.closePath();
+    graphics.fillPath();
+
+    // Outline (white/grey)
+    graphics.lineStyle(2, 0xffffff, 0.3);
+    graphics.strokeTriangle(
+      x - scaledSize / 2,
+      y - scaledSize / 2,
+      x + scaledSize / 2,
+      y - scaledSize / 2,
+      x,
+      y + scaledSize / 2
+    );
+  }
 
   // Add HP indicator for TANK
   if (type === EnemyType.TANK) {
