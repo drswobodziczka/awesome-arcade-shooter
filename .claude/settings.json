@@ -20,7 +20,13 @@
       "Read(**/*.key)",
       "Read(**/.aws/**)",
       "Edit(package-lock.json)",
-      "Edit(pnpm-lock.yaml)"
+      "Edit(pnpm-lock.yaml)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(/etc/passwd)",
+      "Read(/etc/shadow)",
+      "Edit(./node_modules/**)",
+      "Edit(./.git/**)"
     ],
 
     "allow": [
@@ -33,19 +39,18 @@
       "Read(**/package.json)",
       "Read(**/vite.config.*)",
       "Read(**/vitest.config.*)",
-      "Read(**/.github/**)"
+      "Read(**/.github/**)",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "WebSearch"
     ],
 
     "ask": [
-      "Bash(*)",
-      "Bash(rm:*)",
-      "Edit()",
-      "Write()",
-      "WebFetch()",
-      "WebSearch()"
+      "Bash(rm:*)"
     ],
 
-    "disableBypassPermissionsMode": false
+    "disableBypassPermissionsMode": "disable"
   },
 
   "env": {
@@ -55,9 +60,34 @@
   },
 
   "hooks": {
-    "SessionStart": [],
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/enforce-project-guidelines.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-commit.sh"
+          },
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-pr.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [],
-    "Stop": []
+    "SessionEnd": []
   },
 
   "sandbox": {
@@ -67,39 +97,9 @@
     "allowUnsandboxedCommands": false,
 
     "network": {
-      "allowedDomains": [
-        "*.npmjs.org",
-        "registry.npmjs.org",
-        "*.github.com",
-        "api.github.com",
-        "raw.githubusercontent.com"
-      ],
-      "deniedDomains": [],
       "allowUnixSockets": [],
       "allowLocalBinding": true
-    },
-
-    "denyRead": [
-      "~/.ssh/**",
-      "~/.aws/**",
-      "/etc/passwd",
-      "/etc/shadow"
-    ],
-
-    "allowWrite": [
-      "./src/**",
-      "./PoCs/**",
-      "./dist/**",
-      "./build/**",
-      "./.claude/**",
-      "./docs/**",
-      "./tests/**"
-    ],
-
-    "denyWrite": [
-      "./node_modules/**",
-      "./.git/**"
-    ]
+    }
   },
 
   "cleanupPeriodDays": 30

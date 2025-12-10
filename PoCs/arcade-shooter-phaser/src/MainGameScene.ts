@@ -8,23 +8,8 @@ import Phaser from 'phaser';
 import { Enemy, EnemyType, updateEnemyMovement, getEnemyProperties, createEnemy } from './enemies';
 import { spawnEnemies, spawnEnemiesTestMode, SpawnTimers } from './spawning';
 import { showEnemyIntroduction, isFirstEncounter, markAsEncountered } from './enemyIntro';
-import type { GameRegistry } from './types';
-
-/**
- * Game configuration constants.
- */
-const CONFIG = {
-  PLAYER_SPEED: 5,
-  PLAYER_SIZE: 30,
-  GAME_SPEED: 0.8,
-  SHOOT_INTERVAL: 200,
-  BULLET_SPEED: 7,
-  BULLET_SIZE: 5,
-  ENEMY_BULLET_SPEED_MULT: 0.7,
-  STANDARD_ENEMY_SPAWN_INTERVAL: 1000,
-  SPECIAL_ENEMY_SPAWN_INTERVAL: 4500,
-  TEST_MODE_SPAWN_INTERVAL: 1500,
-};
+import type { GameRegistry, GameConfig } from './types';
+import { getDefaultConfig } from './types';
 
 /**
  * Main game scene class.
@@ -70,6 +55,8 @@ export class MainGameScene extends Phaser.Scene {
   private gameMode: 'normal' | 'test' = 'normal';
   /** Test mode configuration: which enemy types to spawn */
   private enabledEnemies: EnemyType[] = [EnemyType.STANDARD];
+  /** Game configuration */
+  private config: GameConfig = getDefaultConfig();
 
   constructor() {
     super({ key: 'MainGameScene' });
@@ -93,6 +80,10 @@ export class MainGameScene extends Phaser.Scene {
     this.generateAudioAssets();
   }
 
+  // Constants
+  private readonly PLAYER_SIZE = 30;
+  private readonly BULLET_SIZE = 5;
+
   /**
    * Phaser lifecycle: initialize scene.
    * Called after preload() - create game objects.
@@ -102,6 +93,7 @@ export class MainGameScene extends Phaser.Scene {
     // Use ?? for consistency with GameOverScene
     this.gameMode = (this.registry.get('gameMode') as GameRegistry['gameMode']) ?? 'normal';
     this.enabledEnemies = (this.registry.get('enabledEnemies') as GameRegistry['enabledEnemies']) ?? [EnemyType.STANDARD];
+    this.config = (this.registry.get('config') as GameRegistry['config']) ?? getDefaultConfig();
 
     // Reset game state
     this.score = 0;
@@ -146,13 +138,13 @@ export class MainGameScene extends Phaser.Scene {
 
     // Create player (cyan triangle pointing up)
     const playerX = this.scale.width / 2;
-    const playerY = this.scale.height - CONFIG.PLAYER_SIZE - 20;
+    const playerY = this.scale.height - this.PLAYER_SIZE - 20;
     this.player = this.add.triangle(
       playerX,
       playerY,
       0, 0,                              // top point
-      -CONFIG.PLAYER_SIZE/2, CONFIG.PLAYER_SIZE,  // bottom-left
-      CONFIG.PLAYER_SIZE/2, CONFIG.PLAYER_SIZE,   // bottom-right
+      -this.PLAYER_SIZE/2, this.PLAYER_SIZE,  // bottom-left
+      this.PLAYER_SIZE/2, this.PLAYER_SIZE,   // bottom-right
       0x00d4ff                           // cyan color
     );
 
@@ -197,23 +189,23 @@ export class MainGameScene extends Phaser.Scene {
     const gameTime = now - this.gameStartTime;
 
     // Player movement
-    const playerSpeed = CONFIG.PLAYER_SPEED * CONFIG.GAME_SPEED;
+    const playerSpeed = this.config.playerSpeed * this.config.gameSpeed;
 
-    if (this.cursors.left.isDown && this.player.x > CONFIG.PLAYER_SIZE / 2) {
+    if (this.cursors.left.isDown && this.player.x > this.PLAYER_SIZE / 2) {
       this.player.x -= playerSpeed;
     }
-    if (this.cursors.right.isDown && this.player.x < this.scale.width - CONFIG.PLAYER_SIZE / 2) {
+    if (this.cursors.right.isDown && this.player.x < this.scale.width - this.PLAYER_SIZE / 2) {
       this.player.x += playerSpeed;
     }
-    if (this.cursors.up.isDown && this.player.y > CONFIG.PLAYER_SIZE) {
+    if (this.cursors.up.isDown && this.player.y > this.PLAYER_SIZE) {
       this.player.y -= playerSpeed;
     }
-    if (this.cursors.down.isDown && this.player.y < this.scale.height - CONFIG.PLAYER_SIZE) {
+    if (this.cursors.down.isDown && this.player.y < this.scale.height - this.PLAYER_SIZE) {
       this.player.y += playerSpeed;
     }
 
     // Player shooting
-    if (this.cursors.space.isDown && now - this.lastPlayerShot > CONFIG.SHOOT_INTERVAL) {
+    if (this.cursors.space.isDown && now - this.lastPlayerShot > this.config.playerShootInterval) {
       this.shootBullet();
       this.lastPlayerShot = now;
     }
@@ -223,15 +215,15 @@ export class MainGameScene extends Phaser.Scene {
     if (this.gameMode === 'normal') {
       spawnEnemies(newEnemies, this.spawnTimers, gameTime, now, {
         canvasWidth: this.scale.width,
-        standardInterval: CONFIG.STANDARD_ENEMY_SPAWN_INTERVAL,
-        specialInterval: CONFIG.SPECIAL_ENEMY_SPAWN_INTERVAL,
+        standardInterval: this.config.standardSpawnInterval,
+        specialInterval: this.config.specialSpawnInterval,
       });
     } else {
       // Test mode: spawn random enemies from enabled list
       spawnEnemiesTestMode(newEnemies, this.spawnTimers, now, {
         canvasWidth: this.scale.width,
         enabledEnemies: this.enabledEnemies,
-        spawnInterval: CONFIG.TEST_MODE_SPAWN_INTERVAL,
+        spawnInterval: this.config.testSpawnInterval,
       });
     }
 
@@ -311,10 +303,10 @@ export class MainGameScene extends Phaser.Scene {
         enemy,
         this.player!.x,
         this.player!.y,
-        CONFIG.PLAYER_SIZE,
+        this.PLAYER_SIZE,
         this.scale.width,
         this.scale.height,
-        CONFIG.GAME_SPEED,
+        this.config.gameSpeed,
         now
       );
 
@@ -356,7 +348,8 @@ export class MainGameScene extends Phaser.Scene {
 
       // Enemy shooting
       const props = getEnemyProperties(enemy.type);
-      if (props.canShoot && now - enemy.lastShot > props.shootInterval) {
+      const shootInterval = this.config.enemyShootIntervals[enemy.type];
+      if (props.canShoot && now - enemy.lastShot > shootInterval) {
         this.shootEnemyBullet(enemy);
         enemy.lastShot = now;
       }
@@ -374,7 +367,7 @@ export class MainGameScene extends Phaser.Scene {
     // Update player bullets (move upward, destroy if off-screen)
     this.bullets.children.entries.forEach((bullet) => {
       const rect = bullet as Phaser.GameObjects.Rectangle;
-      rect.y -= CONFIG.BULLET_SPEED * CONFIG.GAME_SPEED;
+      rect.y -= this.config.bulletSpeed * this.config.gameSpeed;
       if (rect.y < -rect.height) {
         rect.destroy();
       }
@@ -471,9 +464,9 @@ export class MainGameScene extends Phaser.Scene {
 
     const bullet = this.add.rectangle(
       this.player.x,
-      this.player.y - CONFIG.PLAYER_SIZE / 2,
-      CONFIG.BULLET_SIZE,
-      CONFIG.BULLET_SIZE * 2,
+      this.player.y - this.PLAYER_SIZE / 2,
+      this.BULLET_SIZE,
+      this.BULLET_SIZE * 2,
       0x00ff00 // green
     );
     this.bullets?.add(bullet);
@@ -487,7 +480,7 @@ export class MainGameScene extends Phaser.Scene {
    * YELLOW enemies shoot triple-spread, others shoot straight down.
    */
   private shootEnemyBullet(enemy: Enemy): void {
-    const bulletSpeed = CONFIG.BULLET_SPEED * CONFIG.ENEMY_BULLET_SPEED_MULT * CONFIG.GAME_SPEED;
+    const bulletSpeed = this.config.bulletSpeed * this.config.enemyBulletSpeedMult * this.config.gameSpeed;
 
     if (enemy.type === EnemyType.YELLOW) {
       // Triple-spread shot
@@ -498,20 +491,20 @@ export class MainGameScene extends Phaser.Scene {
       const leftBullet = this.add.rectangle(
         centerX - 15,
         bottomY,
-        CONFIG.BULLET_SIZE,
-        CONFIG.BULLET_SIZE * 2,
+        this.BULLET_SIZE,
+        this.BULLET_SIZE * 2,
         0xff6b00 // orange
       );
       leftBullet.setData('vy', bulletSpeed);
-      leftBullet.setData('vx', -2 * CONFIG.GAME_SPEED);
+      leftBullet.setData('vx', -2 * this.config.gameSpeed);
       this.enemyBullets.push(leftBullet);
 
       // Center straight
       const centerBullet = this.add.rectangle(
         centerX,
         bottomY,
-        CONFIG.BULLET_SIZE,
-        CONFIG.BULLET_SIZE * 2,
+        this.BULLET_SIZE,
+        this.BULLET_SIZE * 2,
         0xff6b00
       );
       centerBullet.setData('vy', bulletSpeed);
@@ -521,20 +514,20 @@ export class MainGameScene extends Phaser.Scene {
       const rightBullet = this.add.rectangle(
         centerX + 15,
         bottomY,
-        CONFIG.BULLET_SIZE,
-        CONFIG.BULLET_SIZE * 2,
+        this.BULLET_SIZE,
+        this.BULLET_SIZE * 2,
         0xff6b00
       );
       rightBullet.setData('vy', bulletSpeed);
-      rightBullet.setData('vx', 2 * CONFIG.GAME_SPEED);
+      rightBullet.setData('vx', 2 * this.config.gameSpeed);
       this.enemyBullets.push(rightBullet);
     } else {
       // Standard straight shot
       const bullet = this.add.rectangle(
         enemy.x,
         enemy.y + enemy.height,
-        CONFIG.BULLET_SIZE,
-        CONFIG.BULLET_SIZE * 2,
+        this.BULLET_SIZE,
+        this.BULLET_SIZE * 2,
         0xff6b00
       );
       bullet.setData('vy', bulletSpeed);
@@ -635,7 +628,7 @@ export class MainGameScene extends Phaser.Scene {
    *
    * @param sprite - The sprite to flash
    */
-  private createHitFlash(sprite: Phaser.GameObjects.Triangle): void {
+  private createHitFlash(sprite: Phaser.GameObjects.Triangle | Phaser.GameObjects.Arc): void {
     // Store original color
     const originalColor = sprite.fillColor;
 
