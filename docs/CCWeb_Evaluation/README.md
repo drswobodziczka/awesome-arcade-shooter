@@ -172,6 +172,18 @@ Podoba się praca w CC Web w przeglądarce
 - Idealnie dla maintenerów czy konsultantów pracujących nad wieloma projektami
 - Znacznie wygodniejsze niż zarządzanie wieloma lokalnymi workspaces
 
+### 18. Session-Level Environment Variables Configuration
+
+(+) Możliwość konfiguracji environment variables dla każdej sesji - URL-e, API keys, sekrety
+
+- Konfiguracja bezpośrednio w UI bez hardcodowania w kodzie
+- Każda sesja może mieć niezależne environment variables (dev/staging/prod)
+- Łatwe testowanie z różnymi konfiguracjami
+- Sekrety izolowane per-sesja - nie trafiają do repo
+- Agent automatycznie ma dostęp do skonfigurowanych zmiennych
+- Potencjał do konfiguracji całego środowiska per-sesja
+- Znacznie bezpieczniejsze niż przechowywanie secretów w kodzie
+
 ## Limitations & Issues (-)
 
 ### 1. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands & No File Mentions
