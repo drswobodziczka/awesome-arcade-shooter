@@ -326,6 +326,16 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Problematyczne przy pracy z wieloma repo/środowiskami jednocześnie
 - Ryzyko commitowania do złego brancha czy z błędnymi zmiennymi
 
+### 18. No Model Transparency Within Session
+
+(-) Brak widoczności, który model operuje daną sesją/konwersacją - niedotransparentne
+
+- Możesz wybrać model, ale nie widzisz który faktycznie operuje konwersacją
+- Brak historii zmian modelu w trakcie sesji
+- Jeśli zmienisz model mid-session, agent nie wyświetla tej informacji
+- Widoczność tylko dla potencjalnie nowej konwersacji, nie dla aktualnej
+- Może prowadzić do nieświadomych zmian behawior agenta w trakcie pracy
+
 ## Unknown / To Be Tested (?)
 
 ### 1. Mobile/Android Support
