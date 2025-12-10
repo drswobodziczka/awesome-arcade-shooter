@@ -186,15 +186,21 @@ Podoba się praca w CC Web w przeglądarce
 
 ## Limitations & Issues (-)
 
-### 1. (!) CRITICAL: Brak dostępu do własnych workflow / slash commands & No File Mentions
+### 1. (!) CRITICAL: No Slash Commands & File Mentions Support
 
-Nie można mentionować plików, używać slash commands lub osobistych workflow w CC Web.
+Nie można używać slash commands ani mentionować plików w CC Web.
 
+**Slash Commands:**
+- CC Web nie skanuje `.claude/commands/` z repo - nawet gdy repo jest sklonowane w sandboxie
+- Brak autocomplete/listingu dostępnych commandów (wpisując "/" nic się nie pokazuje)
+- Slash commands zdefiniowane w repozytorium nie działają
+- Działa w CC CLI i lokalnie, ale nie w web interface
+- Eliminuje automatyzację i recurring workflows
+
+**File Mentions:**
 - Brak @ mentions dla plików
-- Brak szybkich komend
 - Brak możliwości stosowania własnych promptów zdefiniowanych lokalnie
-- Wymusza kopiowanie promptów bezpośrednio do konwersacji lub wklejanie do repo
-- Brak możliwości automatyzacji czy integracji z własnymi narzędziami
+- Wymusza kopiowanie promptów bezpośrednio do konwersacji
 - Drastycznie zmniejsza produktywność przy pracy z recurring patterns/workflows
 - **Frustrujące ograniczenie** - kto używa workflow w CLI, będzie znacznie mniej produktywny w Web
 
