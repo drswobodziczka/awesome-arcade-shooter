@@ -252,14 +252,26 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 
 **Impact:** Chaos w zarządzaniu branchami, nieprzewidywalność UI, trudności w śledzeniu stanu pracy.
 
-### 8. CLAUDE.MD Integration Issues
+### 8. Primitive PR Creation - No Intelligent Title/Description Generation
+
+(-) Przycisk "Create PR" bierze jako tytuł initial session title wymyślony przez AI, brak inteligentnego tytułu na podstawie rzeczywistej pracy
+
+- Tytuł PR to nazwa sesji z pierwszego pytania (wymyślona przez AI na start)
+- Brak dynamicznego generowania tytułu na podstawie zmian w sesji
+- W wyniku dyskusji mogą się zeskalać zupełnie inne rzeczy niż initial temat
+- Brak inteligentnego systemu do opisu PR na podstawie wykonanej pracy
+- Brak analizy commity/zmian do wygenerowania sensownego PR description
+- Wymaga ręcznego edytowania PR title/description po utworzeniu
+- Bardzo uboga funkcjonalność w porównaniu do możliwości agenta
+
+### 9. CLAUDE.MD Integration Issues
 
 (-) Nie ma możliwości pracy z CLAUDE.MD - '#' nie dodaje do pamięci.
 
 - Brak wsparcia dla slash command '#' do dodawania context z CLAUDE.MD
 - Ogranicza możliwość konfiguracji project-specific instructions
 
-### 9. No MCP and Tools Configuration
+### 10. No MCP and Tools Configuration
 
 (-!) Brak konfiguracji MCP i narzędzi.
 
@@ -267,7 +279,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Brak dostępu do custom tools
 - Ograniczona extensibility w porównaniu do desktop/CLI version
 
-### 10. Session Freezing Issues
+### 11. Session Freezing Issues
 
 (-) Sesja się czasem zacina -- claude miał mieli retry connection i nic.
 
@@ -275,7 +287,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Próby retry connection nie pomagają
 - Wymaga restart sesji
 
-### 11. False Rate Limit Messages
+### 12. False Rate Limit Messages
 
 (-) Durny i nieprawdziwy komunikat o rate limit.
 
@@ -283,7 +295,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wprowadza w błąd użytkownika
 - Nie odzwierciedla rzeczywistego stanu
 
-### 12. Session Stop Delay
+### 13. Session Stop Delay
 
 (-) Jak się niechcący zacznie sesję to by zatrzymać trzeba czekać z 10 sekund.
 
@@ -291,7 +303,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Brak natychmiastowego cancel
 - Frustrujące przy przypadkowym starcie
 
-### 13. No Conversation History Navigation
+### 14. No Conversation History Navigation
 
 (-) Nie ma opcji back in time w konwersacji.
 
@@ -299,7 +311,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Nie można wrócić do poprzednich punktów w konwersacji
 - Brak undo/rollback functionality
 
-### 14. Model & Repository Selection Not Persisted
+### 15. Model & Repository Selection Not Persisted
 
 (-) Zawsze zostaje model i repo ostatniego wyboru. Wolałbym żeby interfejs pamiętał wybory między konwersacjami i oknami CC Web
 
@@ -308,7 +320,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego resetowania wyboru za każdym razem
 - Uciążliwe przy pracy z wieloma projektami/modelami
 
-### 15. Cannot Test Running Instances During Active Development
+### 16. Cannot Test Running Instances During Active Development
 
 (-) W trybie aktywnego rozwijania gałęzi nie możemy odpalić serwera, otworzyć przeglądarki i pozwolić agentowi samodzielnie testować aplikację.
 
@@ -318,7 +330,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga ręcznego testowania przez użytkownika lub instrukcji user-provided o błędach/wynikach
 - Utrudnia debugging i iteracyjne poprawianie kodu
 
-### 16. No Bash Mode
+### 17. No Bash Mode
 
 (-) Brak bash mode `!` jak w CC CLI.
 
@@ -327,7 +339,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga zawsze pełnego kontekstu agenta nawet dla prostych operacji terminalowych
 - Zmniejsza efektywność przy prostych operacjach systemowych
 
-### 17. No Session State Persistence Across Tabs
+### 18. No Session State Persistence Across Tabs
 
 (-) Brak persystencji ustawień między takami - refresh przejmuje ostatnio ustawione wartości
 
@@ -335,7 +347,7 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Problematyczne przy pracy z wieloma repo/środowiskami jednocześnie
 - Ryzyko commitowania do złego brancha czy z błędnymi zmiennymi
 
-### 18. No Model Transparency Within Session
+### 19. No Model Transparency Within Session
 
 (-) Brak widoczności, który model operuje daną sesją/konwersacją - niedotransparentne
 
