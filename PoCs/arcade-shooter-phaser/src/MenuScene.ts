@@ -6,8 +6,8 @@
 
 import Phaser from 'phaser';
 import { EnemyType, getEnemyProperties } from './enemies';
-import type { GameRegistry } from './types';
-import { validateTestModeConfig } from './types';
+import type { GameRegistry, GameConfig } from './types';
+import { validateTestModeConfig, getDefaultConfig } from './types';
 
 /**
  * Menu scene for configuring game mode and starting the game.
@@ -18,6 +18,8 @@ export class MenuScene extends Phaser.Scene {
   private gameMode: 'normal' | 'test' = 'normal';
   /** Selected enemies for test mode */
   private selectedEnemies: Set<EnemyType> = new Set([EnemyType.STANDARD]);
+  /** Game configuration */
+  private config: GameConfig = getDefaultConfig();
   /** UI text objects for mode indicators */
   private modeTexts: Map<string, Phaser.GameObjects.Text> = new Map();
   /** UI text objects for enemy checkboxes */
@@ -26,6 +28,8 @@ export class MenuScene extends Phaser.Scene {
   private enemySelectionContainer?: Phaser.GameObjects.Container;
   /** Error text for validation feedback */
   private errorText?: Phaser.GameObjects.Text;
+  /** Config value display texts */
+  private configTexts: Map<string, Phaser.GameObjects.Text> = new Map();
 
   constructor() {
     super({ key: 'MenuScene' });
@@ -33,26 +37,26 @@ export class MenuScene extends Phaser.Scene {
 
   create(): void {
     const centerX = this.scale.width / 2;
-    let y = 80;
+    let y = 40;
 
     // Title
     this.add.text(centerX, y, 'ARCADE SHOOTER', {
-      fontSize: '48px',
+      fontSize: '36px',
       color: '#e94560',
       fontFamily: 'Arial',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    y += 80;
+    y += 50;
 
     // Subtitle
     this.add.text(centerX, y, 'Configure Your Game', {
-      fontSize: '20px',
+      fontSize: '16px',
       color: '#00d4ff',
       fontFamily: 'Arial',
     }).setOrigin(0.5);
 
-    y += 60;
+    y += 40;
 
     // Mode selection header
     this.add.text(centerX, y, 'Game Mode:', {
@@ -86,7 +90,11 @@ export class MenuScene extends Phaser.Scene {
       .on('pointerdown', () => this.selectMode('test'));
 
     this.modeTexts.set('test', testText);
-    y += 60;
+    y += 40;
+
+    // Configuration sections
+    y = this.createConfigSection(centerX, y);
+    y += 20;
 
     // Enemy selection (for test mode)
     this.createEnemySelection(centerX, y);
@@ -122,6 +130,167 @@ export class MenuScene extends Phaser.Scene {
 
     // Enable Enter key to start (once auto-removes after first trigger)
     this.input.keyboard?.once('keydown-ENTER', () => this.startGame());
+  }
+
+  /**
+   * Creates configuration section with all parameters.
+   */
+  private createConfigSection(x: number, y: number): number {
+    const leftCol = x - 200;
+    const rightCol = x + 50;
+
+    // Speed Settings Header
+    this.add.text(leftCol, y, '⚡ Speed', {
+      fontSize: '14px',
+      color: '#00d4ff',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+    y += 25;
+
+    y = this.createConfigItem(leftCol, rightCol, y, 'Game Speed', 'gameSpeed', 0.1, 5, 0.1);
+    y = this.createConfigItem(leftCol, rightCol, y, 'Player Speed', 'playerSpeed', 1, 20, 0.5);
+    y = this.createConfigItem(leftCol, rightCol, y, 'Bullet Speed', 'bulletSpeed', 1, 20, 0.5);
+    y = this.createConfigItem(leftCol, rightCol, y, 'Enemy Bullet x', 'enemyBulletSpeedMult', 0.1, 2, 0.1);
+    y += 10;
+
+    // Shooting Intervals Header
+    this.add.text(leftCol, y, '🔫 Shoot Intervals (ms)', {
+      fontSize: '14px',
+      color: '#00d4ff',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+    y += 25;
+
+    y = this.createConfigItem(leftCol, rightCol, y, 'Player', 'playerShootInterval', 50, 5000, 50);
+    y = this.createConfigItem(leftCol, rightCol, y, 'STANDARD', 'enemyShootStandard', 100, 5000, 100);
+    y = this.createConfigItem(leftCol, rightCol, y, 'YELLOW', 'enemyShootYellow', 100, 5000, 100);
+    y = this.createConfigItem(leftCol, rightCol, y, 'TANK', 'enemyShootTank', 100, 5000, 100);
+    y = this.createConfigItem(leftCol, rightCol, y, 'TELEPORT', 'enemyShootTeleport', 100, 5000, 100);
+    y += 10;
+
+    // Spawn Intervals Header
+    this.add.text(leftCol, y, '👾 Spawn Intervals (ms)', {
+      fontSize: '14px',
+      color: '#00d4ff',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+    y += 25;
+
+    y = this.createConfigItem(leftCol, rightCol, y, 'STANDARD', 'standardSpawnInterval', 100, 10000, 100);
+    y = this.createConfigItem(leftCol, rightCol, y, 'Special', 'specialSpawnInterval', 100, 10000, 100);
+    y = this.createConfigItem(leftCol, rightCol, y, 'Test Mode', 'testSpawnInterval', 100, 10000, 100);
+
+    return y;
+  }
+
+  /**
+   * Creates a single config item with +/- buttons.
+   */
+  private createConfigItem(
+    leftX: number,
+    rightX: number,
+    y: number,
+    label: string,
+    key: string,
+    min: number,
+    max: number,
+    step: number
+  ): number {
+    // Label
+    this.add.text(leftX, y, `${label}:`, {
+      fontSize: '12px',
+      color: '#ffffff',
+      fontFamily: 'Arial',
+    }).setOrigin(0, 0.5);
+
+    // Value
+    const valueText = this.add.text(rightX, y, this.getConfigValue(key).toString(), {
+      fontSize: '12px',
+      color: '#ffd700',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+    }).setOrigin(0.5, 0.5);
+    this.configTexts.set(key, valueText);
+
+    // Minus button
+    const minusBtn = this.add.text(rightX - 40, y, '-', {
+      fontSize: '18px',
+      color: '#ffffff',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+      backgroundColor: '#e94560',
+      padding: { x: 8, y: 2 },
+    }).setOrigin(0.5, 0.5)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => {
+        this.updateConfigValue(key, -step, min, max);
+      });
+
+    // Plus button
+    const plusBtn = this.add.text(rightX + 40, y, '+', {
+      fontSize: '18px',
+      color: '#ffffff',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+      backgroundColor: '#e94560',
+      padding: { x: 6, y: 2 },
+    }).setOrigin(0.5, 0.5)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => {
+        this.updateConfigValue(key, step, min, max);
+      });
+
+    return y + 20;
+  }
+
+  /**
+   * Gets config value by key.
+   */
+  private getConfigValue(key: string): number {
+    if (key === 'gameSpeed') return this.config.gameSpeed;
+    if (key === 'playerSpeed') return this.config.playerSpeed;
+    if (key === 'bulletSpeed') return this.config.bulletSpeed;
+    if (key === 'enemyBulletSpeedMult') return this.config.enemyBulletSpeedMult;
+    if (key === 'playerShootInterval') return this.config.playerShootInterval;
+    if (key === 'enemyShootStandard') return this.config.enemyShootIntervals[EnemyType.STANDARD];
+    if (key === 'enemyShootYellow') return this.config.enemyShootIntervals[EnemyType.YELLOW];
+    if (key === 'enemyShootTank') return this.config.enemyShootIntervals[EnemyType.TANK];
+    if (key === 'enemyShootTeleport') return this.config.enemyShootIntervals[EnemyType.TELEPORT];
+    if (key === 'standardSpawnInterval') return this.config.standardSpawnInterval;
+    if (key === 'specialSpawnInterval') return this.config.specialSpawnInterval;
+    if (key === 'testSpawnInterval') return this.config.testSpawnInterval;
+    return 0;
+  }
+
+  /**
+   * Updates config value by key.
+   */
+  private updateConfigValue(key: string, delta: number, min: number, max: number): void {
+    const current = this.getConfigValue(key);
+    const newValue = Math.max(min, Math.min(max, current + delta));
+    const rounded = Math.round(newValue * 100) / 100;
+
+    if (key === 'gameSpeed') this.config.gameSpeed = rounded;
+    else if (key === 'playerSpeed') this.config.playerSpeed = rounded;
+    else if (key === 'bulletSpeed') this.config.bulletSpeed = rounded;
+    else if (key === 'enemyBulletSpeedMult') this.config.enemyBulletSpeedMult = rounded;
+    else if (key === 'playerShootInterval') this.config.playerShootInterval = rounded;
+    else if (key === 'enemyShootStandard') this.config.enemyShootIntervals[EnemyType.STANDARD] = rounded;
+    else if (key === 'enemyShootYellow') this.config.enemyShootIntervals[EnemyType.YELLOW] = rounded;
+    else if (key === 'enemyShootTank') this.config.enemyShootIntervals[EnemyType.TANK] = rounded;
+    else if (key === 'enemyShootTeleport') this.config.enemyShootIntervals[EnemyType.TELEPORT] = rounded;
+    else if (key === 'standardSpawnInterval') this.config.standardSpawnInterval = rounded;
+    else if (key === 'specialSpawnInterval') this.config.specialSpawnInterval = rounded;
+    else if (key === 'testSpawnInterval') this.config.testSpawnInterval = rounded;
+
+    // Update display
+    const valueText = this.configTexts.get(key);
+    if (valueText) {
+      valueText.setText(rounded.toString());
+    }
   }
 
   /**
@@ -246,9 +415,11 @@ export class MenuScene extends Phaser.Scene {
     // Pass configuration to MainGameScene via registry (type-safe)
     const gameMode: GameRegistry['gameMode'] = this.gameMode;
     const enabledEnemies: GameRegistry['enabledEnemies'] = Array.from(this.selectedEnemies);
+    const config: GameRegistry['config'] = this.config;
 
     this.game.registry.set('gameMode', gameMode);
     this.game.registry.set('enabledEnemies', enabledEnemies);
+    this.game.registry.set('config', config);
 
     // Start main game scene
     this.scene.start('MainGameScene');
