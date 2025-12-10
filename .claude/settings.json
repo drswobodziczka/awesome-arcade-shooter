@@ -55,7 +55,31 @@
   },
 
   "hooks": {
-    "SessionStart": [],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/enforce-project-guidelines.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-commit.sh"
+          },
+          {
+            "type": "command",
+            "command": "./.claude/hooks/pre-pr.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [],
     "Stop": []
   },
