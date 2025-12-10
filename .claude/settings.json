@@ -33,16 +33,15 @@
       "Read(**/package.json)",
       "Read(**/vite.config.*)",
       "Read(**/vitest.config.*)",
-      "Read(**/.github/**)"
+      "Read(**/.github/**)",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "WebSearch"
     ],
 
     "ask": [
-      "Bash(*)",
-      "Bash(rm:*)",
-      "Edit()",
-      "Write()",
-      "WebFetch()",
-      "WebSearch()"
+      "Bash(rm:*)"
     ],
 
     "disableBypassPermissionsMode": false
