@@ -318,6 +318,18 @@ CCWeb nie może automatycznie czytać errorów z failed builds.
 - Wymaga zawsze pełnego kontekstu agenta nawet dla prostych operacji terminalowych
 - Zmniejsza efektywność przy prostych operacjach systemowych
 
+### 17. No Session State Persistence Across Tabs
+
+(-) Brak persystencji ustawień między takami - refresh w innym tabie przejmuje ostatnio ustawione wartości
+
+- Jeśli pracujesz z wieloma takami CC Web jednocześnie (różne repo, modele, środowiska, sesje)
+- Refresh lub nawigacja w innym tabie może przejąć ostatnie globalne ustawienia
+- Ryzyko pomyłki - łatwo można pracować w złym kontekście
+- Brak indywidualnego stanu per-tab
+- Szczególnie problematyczne przy pracy nad wieloma projektami równolegle
+- Wymaga ręcznego resetowania ustawień po przełączeniu między takami
+- Niespójne zachowanie UI między takami
+
 ## Unknown / To Be Tested (?)
 
 ### 1. Mobile/Android Support
