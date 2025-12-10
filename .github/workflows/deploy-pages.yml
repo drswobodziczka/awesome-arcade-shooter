@@ -25,20 +25,20 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
-          cache-dependency-path: 'PoCs/arcade-shooter/package-lock.json'
+          cache-dependency-path: 'PoCs/arcade-shooter-phaser/package-lock.json'
 
       - name: Install dependencies
-        working-directory: ./PoCs/arcade-shooter
+        working-directory: ./PoCs/arcade-shooter-phaser
         run: npm ci
 
       - name: Build
-        working-directory: ./PoCs/arcade-shooter
+        working-directory: ./PoCs/arcade-shooter-phaser
         run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./PoCs/arcade-shooter/dist
+          path: ./PoCs/arcade-shooter-phaser/dist
 
   deploy:
     environment:
