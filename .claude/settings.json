@@ -93,8 +93,8 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
-    "excludedCommands": [],
-    "allowUnsandboxedCommands": false,
+    "excludedCommands": ["git"],
+    "allowUnsandboxedCommands": true,
 
     "network": {
       "allowUnixSockets": [],
