@@ -18,8 +18,12 @@ import { getDefaultConfig } from './types';
 export class MainGameScene extends Phaser.Scene {
   /** Current game score (10 points per enemy killed) */
   private score: number = 0;
+  /** Player lives remaining (starts with 3) */
+  private lives: number = 3;
   /** DOM element for score display */
   private scoreText?: Phaser.GameObjects.Text;
+  /** DOM element for lives display */
+  private livesText?: Phaser.GameObjects.Text;
   /** Player sprite */
   private player?: Phaser.GameObjects.Triangle;
   /** Keyboard cursor keys */
@@ -97,6 +101,7 @@ export class MainGameScene extends Phaser.Scene {
 
     // Reset game state
     this.score = 0;
+    this.lives = 3;
     this.enemies = [];
     this.enemyBullets = [];
     this.gameOver = false;
@@ -121,6 +126,13 @@ export class MainGameScene extends Phaser.Scene {
     this.scoreText = this.add.text(10, 10, 'Score: 0', {
       fontSize: '24px',
       color: '#e94560',
+      fontFamily: 'Arial',
+    });
+
+    // Lives text (below score)
+    this.livesText = this.add.text(10, 40, 'Lives: 3', {
+      fontSize: '24px',
+      color: '#ff6b6b',
       fontFamily: 'Arial',
     });
 
@@ -442,7 +454,11 @@ export class MainGameScene extends Phaser.Scene {
     // Check collisions: player vs enemies
     for (const enemy of this.enemies) {
       if (this.checkOverlap(this.player, enemy.sprite)) {
-        this.gameOver = true;
+        this.lives -= 1;
+        this.updateLivesDisplay();
+        if (this.lives <= 0) {
+          this.gameOver = true;
+        }
         return;
       }
     }
@@ -450,7 +466,11 @@ export class MainGameScene extends Phaser.Scene {
     // Check collisions: player vs enemy bullets
     for (const bullet of this.enemyBullets) {
       if (this.checkOverlap(this.player, bullet)) {
-        this.gameOver = true;
+        this.lives -= 1;
+        this.updateLivesDisplay();
+        if (this.lives <= 0) {
+          this.gameOver = true;
+        }
         return;
       }
     }
@@ -543,6 +563,15 @@ export class MainGameScene extends Phaser.Scene {
     this.score = points;
     if (this.scoreText) {
       this.scoreText.setText(`Score: ${this.score}`);
+    }
+  }
+
+  /**
+   * Updates the lives display text.
+   */
+  updateLivesDisplay(): void {
+    if (this.livesText) {
+      this.livesText.setText(`Lives: ${this.lives}`);
     }
   }
 
